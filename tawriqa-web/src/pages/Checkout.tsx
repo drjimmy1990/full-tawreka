@@ -108,11 +108,24 @@ export default function Checkout() {
                     </h3>
                     <div className="space-y-3 mb-4">
                         {items.map(item => (
-                            <div key={item.id} className="flex justify-between text-sm">
-                                <div>
-                                    <span className="font-bold text-gray-700">{item.quantity}x</span> {item.name}
+                            <div key={item.id} className="flex flex-col text-sm border-b border-gray-50 last:border-0 pb-2 mb-2 last:pb-0 last:mb-0">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <span className="font-bold text-gray-700">{item.quantity}x</span> {item.name}
+                                    </div>
+                                    <span className="text-gray-900 font-medium">{(item.totalPrice * item.quantity).toFixed(0)}</span>
                                 </div>
-                                <span className="text-gray-900 font-medium">{(item.totalPrice * item.quantity).toFixed(0)}</span>
+                                {item.selectedOptions && item.selectedOptions.length > 0 && (
+                                    <div className="text-xs text-gray-400 ps-4 mt-1 space-y-0.5">
+                                        {item.selectedOptions.map((opt, i) => (
+                                            <div key={i} className="flex justify-between">
+                                                <span>• {opt.name}</span>
+                                                {opt.price > 0 && <span>+{opt.price}</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
+                                }
                             </div>
                         ))}
                     </div>
@@ -208,6 +221,6 @@ export default function Checkout() {
                     </Button>
                 </form>
             </div>
-        </div>
+        </div >
     );
 }

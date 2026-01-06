@@ -53,6 +53,20 @@ export default function Menu() {
     const currentItems = currentCategory?.items || [];
     const cartCount = getItemCount();
 
+    // Helper to calculate "From" price for items with variations
+    const calculateMinPrice = (item: any) => {
+        if (!item.options || item.options.length === 0) return 0;
+
+        // Check for price replacement groups (Sizes)
+        const sizeGroup = item.options.find((g: any) => g.is_price_replacement);
+        if (sizeGroup && sizeGroup.choices?.length > 0) {
+            // Return the lowest price among sizes
+            return Math.min(...sizeGroup.choices.map((c: any) => c.price_modifier));
+        }
+
+        return 0;
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -124,6 +138,8 @@ export default function Menu() {
                                 description={lang === 'ar' ? item.description_ar : (item.description_en || item.description_ar)}
                                 price={item.current_price || item.base_price}
                                 image={item.image_url || `https://source.unsplash.com/random/400x400?food,plate&sig=${item.id}`}
+                                hasOptions={item.options && item.options.length > 0}
+                                minPrice={calculateMinPrice(item)}
                                 onAdd={() => setSelectedItem(item)}
                             /> // item passed to onAdd is used to set selectedItem
                         ))

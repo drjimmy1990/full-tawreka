@@ -41,9 +41,15 @@ const translations: Record<string, Record<string, string>> = {
 
         // Menu
         'menu.categories': 'الأقسام',
+        'menu.from': 'من',
         'menu.add': 'أضف',
         'menu.added': 'تمت الإضافة',
         'menu.no_items': 'لا توجد أصناف',
+        'menu.special_instructions': 'ملاحظات خاصة',
+        'menu.total': 'الإجمالي',
+        'menu.add_to_cart': 'أضف للسلة',
+        'menu.required': 'مطلوب',
+        'menu.optional': 'اختياري',
 
         // Cart
         'cart.title': 'سلة الطلب',
@@ -112,9 +118,15 @@ const translations: Record<string, Record<string, string>> = {
 
         // Menu
         'menu.categories': 'Categories',
+        'menu.from': 'From',
         'menu.add': 'Add',
         'menu.added': 'Added',
         'menu.no_items': 'No items',
+        'menu.special_instructions': 'Special Instructions',
+        'menu.total': 'Total',
+        'menu.add_to_cart': 'Add to Cart',
+        'menu.required': 'Required',
+        'menu.optional': 'Optional',
 
         // Cart
         'cart.title': 'Your Cart',
@@ -183,9 +195,15 @@ const translations: Record<string, Record<string, string>> = {
 
         // Menu
         'menu.categories': 'Категории',
+        'menu.from': 'от',
         'menu.add': 'Добавить',
         'menu.added': 'Добавлено',
         'menu.no_items': 'Нет товаров',
+        'menu.special_instructions': 'Особые указания',
+        'menu.total': 'Итого',
+        'menu.add_to_cart': 'В корзину',
+        'menu.required': 'Обязательно',
+        'menu.optional': 'Необязательно',
 
         // Cart
         'cart.title': 'Корзина',

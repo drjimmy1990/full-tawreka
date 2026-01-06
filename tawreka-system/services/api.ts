@@ -379,30 +379,78 @@ export const api = {
 
   // 1. Get all items with their specific price for a branch
   getBranchMenuSettings: async (branchId: number) => {
-    // Fetch all items + LEFT JOIN the specific branch price
-    const { data, error } = await supabase
+    // A. Fetch All Items
+    const { data: items, error: itemError } = await supabase
       .from('menu_items')
-      .select(`
-        id, category_id, name_ar, base_price,
-        branch_item_prices!left ( price, is_available )
-      `)
-      .eq('branch_item_prices.branch_id', branchId)
+      .select('id, category_id, name_ar, name_en, base_price')
       .order('category_id');
 
-    if (error) throw error;
-    return data;
+    if (itemError) throw itemError;
+
+    // B. Fetch Branch Prices for this branch
+    const { data: branchPrices, error: priceError } = await supabase
+      .from('branch_item_prices')
+      .select('item_id, price, is_available, choice_prices')
+      .eq('branch_id', branchId);
+
+    if (priceError) throw priceError;
+
+    // Create a map for quick lookup
+    const priceMap = new Map();
+    branchPrices?.forEach(bp => {
+      priceMap.set(bp.item_id, bp);
+    });
+
+    // C. Fetch Options (Groups + Choices) to display what can be priced
+    const { data: optionsData, error: optError } = await supabase
+      .from('item_option_links')
+      .select(`
+            item_id,
+            choice_prices,
+            option_groups (
+                id, name_ar, name_en,
+                option_choices ( id, name_ar, name_en )
+            )
+        `)
+      .order('sort_order');
+
+    if (optError) throw optError;
+
+    // D. Merge everything
+    return items.map((item: any) => {
+      const branchPriceData = priceMap.get(item.id);
+
+      const linkedOptions = optionsData
+        .filter((l: any) => l.item_id === item.id)
+        .map((l: any) => ({
+          ...l.option_groups,
+          base_choice_prices: l.choice_prices // The global default prices
+        }));
+
+      return {
+        ...item,
+        options: linkedOptions,
+        branch_item_prices: branchPriceData ? [branchPriceData] : []
+      };
+    });
   },
 
   // 2. Save a specific price override
-  updateBranchPrice: async (branchId: number, itemId: number, price: number, isAvailable: boolean) => {
+  updateBranchPrice: async (branchId: number, itemId: number, price: number, isAvailable: boolean, choicePrices?: Record<string, number>) => {
+    const payload: any = {
+      branch_id: branchId,
+      item_id: itemId,
+      price: price,
+      is_available: isAvailable
+    };
+
+    if (choicePrices) {
+      payload.choice_prices = choicePrices;
+    }
+
     const { error } = await supabase
       .from('branch_item_prices')
-      .upsert({
-        branch_id: branchId,
-        item_id: itemId,
-        price: price,
-        is_available: isAvailable
-      }); // Upsert handles insert (new override) or update (existing override)
+      .upsert(payload); // Upsert handles insert (new override) or update (existing override)
 
     if (error) throw error;
   },

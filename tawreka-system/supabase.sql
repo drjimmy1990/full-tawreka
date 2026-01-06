@@ -381,6 +381,7 @@ CREATE TABLE IF NOT EXISTS public.branch_item_prices (
     item_id BIGINT REFERENCES public.menu_items (id) ON DELETE CASCADE,
     price DECIMAL(10, 2) NOT NULL,
     is_available BOOLEAN DEFAULT TRUE, -- Can hide an item just for this branch
+    choice_prices JSONB DEFAULT '{}', -- Store item-specific prices for choices: { "choice_id": price }
     PRIMARY KEY (branch_id, item_id)
 );
 
@@ -560,3 +561,7 @@ ALTER TABLE public.item_option_links
 ADD COLUMN IF NOT EXISTS choice_prices JSONB DEFAULT '{}';
 -- Format: { "choice_id": price, "choice_id": price, ... }
 -- Example: { "1": 35, "2": 50, "3": 70, "4": 0 }
+
+ALTER TABLE public.branch_item_prices
+ADD COLUMN IF NOT EXISTS choice_prices JSONB DEFAULT '{}';
+-- Ensures existing tables get the column too

@@ -136,6 +136,9 @@ const translations: Record<Language, Record<string, string>> = {
     'prices.custom': 'مخصص',
     'prices.no_items': 'لا توجد أصناف. أضف أصناف في إدارة القائمة أولاً.',
     'prices.update_failed': 'فشل التحديث',
+    'menu.variations': 'تخصيص الخيارات',
+    'menu.groups': 'مجموعات',
+    'prices.variations_note': 'ملاحظة: السعر المدخل هنا سيستبدل السعر الأصلي للخيار في هذا الفرع فقط.',
   },
   en: {
     'app.title': 'Restaurant OS',
@@ -262,6 +265,9 @@ const translations: Record<Language, Record<string, string>> = {
     'prices.custom': 'Custom',
     'prices.no_items': 'No menu items found. Add items in the Menu Builder first.',
     'prices.update_failed': 'Failed to update',
+    'menu.variations': 'Variations Customization',
+    'menu.groups': 'Groups',
+    'prices.variations_note': 'Note: Price entered here will replace the original option price for this branch only.',
   }
 };
 

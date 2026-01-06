@@ -35,70 +35,142 @@ export const getBranchMenu = async (req: Request, res: Response) => {
 
         if (catError) throw catError;
 
-        // B. Fetch Items + Specific Branch Price
+        // B. Fetch All Active Items (Global)
         const { data: rawItems, error: itemError } = await supabase
             .from('menu_items')
-            .select(`
-                *,
-                branch_item_prices ( price, is_available )
-            `)
+            .select('*')
             .eq('is_active', true)
-            .eq('branch_item_prices.branch_id', branchId);
+            .order('category_id');
 
         if (itemError) throw itemError;
 
-        // C. Fetch Options (Groups + Choices + Choice Prices)
-        const { data: optionsData, error: optError } = await supabase
+        // C. Fetch Branch Specific Prices
+        const { data: branchPrices, error: priceError } = await supabase
+            .from('branch_item_prices')
+            .select('item_id, price, is_available, choice_prices')
+            .eq('branch_id', branchId);
+
+        if (priceError) throw priceError;
+
+        // Map for quick lookup
+        const priceMap = new Map();
+        branchPrices?.forEach(bp => {
+            priceMap.set(bp.item_id, bp);
+        });
+
+        // D. Fetch Item-Option Links with Groups (NO nested choices - Supabase issue)
+        const { data: linksData, error: linkError } = await supabase
             .from('item_option_links')
             .select(`
                 item_id,
                 choice_prices,
                 option_groups (
-                    id, name_ar, name_en, min_selection, max_selection, is_price_replacement,
-                    option_choices ( id, name_ar, name_en )
+                    id, name_ar, name_en, min_selection, max_selection, is_price_replacement
                 )
             `)
             .order('sort_order');
 
-        if (optError) throw optError;
+        if (linkError) throw linkError;
 
-        // D. Combine everything
+        // E. Fetch ALL option_choices separately
+        const { data: allChoices, error: choiceError } = await supabase
+            .from('option_choices')
+            .select('id, group_id, name_ar, name_en, price_modifier, is_available')
+            .eq('is_available', true);
+
+        if (choiceError) throw choiceError;
+
+        // F. Create lookup map for choices by group_id
+        const choicesByGroup = new Map<number, any[]>();
+        allChoices?.forEach(choice => {
+            const groupId = choice.group_id;
+            if (!choicesByGroup.has(groupId)) {
+                choicesByGroup.set(groupId, []);
+            }
+            choicesByGroup.get(groupId)!.push(choice);
+        });
+
+        // DEBUG
+        console.log('DEBUG linksData count:', linksData?.length);
+        console.log('DEBUG allChoices count:', allChoices?.length);
+        console.log('DEBUG choicesByGroup:', Object.fromEntries(choicesByGroup));
+
+        // E. Combine everything
         const menu: MenuCategory[] = categories.map((cat: any) => ({
             id: cat.id,
             name_ar: cat.name_ar,
             name_en: cat.name_en,
+            name_other: cat.name_other,
+            image_url: cat.image_url,
             items: []
         }));
 
         rawItems.forEach((item: any) => {
-            // Check availability
-            const branchPriceData = item.branch_item_prices && item.branch_item_prices[0];
+            // Get Branch Override
+            const branchPriceData = priceMap.get(item.id);
+
+            // Check availability - if explicit false, skip. Default is true (even if no row)
             if (branchPriceData && branchPriceData.is_available === false) return;
 
             // Calculate Price (Override or Base)
             const finalPrice = branchPriceData ? branchPriceData.price : item.base_price;
 
+            // Get Branch Specific Choice Prices override if exists
+            const branchChoicePrices = branchPriceData?.choice_prices || {};
+
             // Find Options with item-specific prices
-            const itemOptions = optionsData
+            const itemOptions = linksData
                 .filter((link: any) => link.item_id === item.id)
                 .map((link: any) => {
                     const group = link.option_groups;
-                    const choicePrices = link.choice_prices || {};
+                    if (!group) return null; // Safety check
 
-                    // Apply item-specific prices and filter out price=0
-                    const choices = (group.option_choices || [])
-                        .map((choice: any) => ({
+                    // Get choices from our separate lookup
+                    const groupChoices = choicesByGroup.get(group.id) || [];
+
+                    // Item-Link prices (set in MenuBuilder for THIS item)
+                    const itemLinkPrices = link.choice_prices || {};
+
+                    // DEBUG: Log the item link prices
+                    console.log(`DEBUG Item ${item.id} Group ${group.id} itemLinkPrices:`, itemLinkPrices);
+
+                    // Apply pricing logic
+                    const choices = groupChoices.map((choice: any) => {
+                        let price = undefined;
+
+                        // 1. Branch Override
+                        if (branchChoicePrices[choice.id.toString()] !== undefined) {
+                            price = branchChoicePrices[choice.id.toString()];
+                        }
+
+                        // 2. Item Link Price (try both string and number keys)
+                        if (price === undefined) {
+                            const strKey = choice.id.toString();
+                            const numKey = choice.id;
+                            if (itemLinkPrices[strKey] !== undefined) {
+                                price = itemLinkPrices[strKey];
+                            } else if (itemLinkPrices[numKey] !== undefined) {
+                                price = itemLinkPrices[numKey];
+                            }
+                        }
+
+                        // 3. Fallback to Global Option Price
+                        if (price === undefined) {
+                            price = choice.price_modifier;
+                        }
+
+                        return {
                             ...choice,
-                            price_modifier: choicePrices[choice.id] ?? 0
-                        }))
-                        .filter((choice: any) => choice.price_modifier > 0); // Hide 0-price items
+                            price_modifier: price ?? 0
+                        };
+                    });
 
                     return {
                         ...group,
                         choices
                     };
                 })
-                .filter((group: any) => group.choices.length > 0); // Hide empty groups
+                .filter((group: any) => group !== null);
 
             const processedItem: MenuItem = {
                 id: item.id,

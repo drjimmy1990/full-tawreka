@@ -24,7 +24,8 @@ export interface MenuOptionGroup {
     min_selection: number;
     max_selection: number;
     is_price_replacement?: boolean;
-    choices: MenuOptionChoice[];
+    choices?: MenuOptionChoice[];
+    option_choices?: MenuOptionChoice[]; // API returns this name from Supabase nested query
 }
 
 // Variations Types (Item-specific sizes and extras)
@@ -69,6 +70,7 @@ export interface MenuCategory {
     name_ar: string;
     name_en?: string;
     name_other?: string;
+    image_url?: string;
     sort_order?: number;
     items?: MenuItem[];
 }

@@ -7,10 +7,12 @@ interface MenuItemProps {
     description: string;
     price: number;
     image: string;
+    hasOptions?: boolean;
+    minPrice?: number;
     onAdd: () => void;
 }
 
-export default function MenuItemCard({ name, description, price, image, onAdd }: MenuItemProps) {
+export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice }: MenuItemProps) {
     const { t } = useTranslation();
 
     return (
@@ -33,7 +35,10 @@ export default function MenuItemCard({ name, description, price, image, onAdd }:
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
-                    <span className="font-bold text-lg text-primary">{price} <span className="text-xs font-normal text-gray-400">{t('common.currency')}</span></span>
+                    <span className="font-bold text-lg text-primary">
+                        {hasOptions && <span className="text-xs font-normal opacity-70 ltr:mr-1 rtl:ml-1">{t('menu.from')}</span>}
+                        {minPrice || price} <span className="text-xs font-normal text-gray-400">{t('common.currency')}</span>
+                    </span>
 
                     <button
                         onClick={onAdd}

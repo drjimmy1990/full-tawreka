@@ -23,6 +23,36 @@ The web client (`tawriqa-web`) has been partially updated for the hybrid variati
 
 ## 📋 Phase 1: Critical Fixes
 
+### 1.0 🔴 FIX: Category Images Missing
+**File**: `backend-api/src/controllers/menuController.ts`
+
+**Issue**: The controller fetches `image_url` from DB but explicitly excludes it when mapping the response object.
+
+**Change Needed**:
+```typescript
+const menu: MenuCategory[] = categories.map((cat: any) => ({
+    id: cat.id,
+    name_ar: cat.name_ar,
+    name_en: cat.name_en,
+    name_other: cat.name_other, // Add this
+    image_url: cat.image_url,   // Add this!
+    items: []
+}));
+```
+
+### 1.0b 🔴 FIX: Frontend Types
+**File**: `tawriqa-web/src/types/index.ts`
+
+**Issue**: `MenuCategory` interface is missing `image_url` property.
+
+**Change Needed**:
+```typescript
+export interface MenuCategory {
+    // ...
+    image_url?: string;
+}
+```
+
 ### 1.1 ProductModal Price Display Fix
 **File**: `src/components/menu/ProductModal.tsx`
 

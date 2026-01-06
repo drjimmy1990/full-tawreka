@@ -15,6 +15,9 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
     const { t, lang } = useTranslation();
     const { addToCart } = useCartStore();
 
+    // Helper: Get choices from either .choices or .option_choices (API returns option_choices)
+    const getChoices = (group: any) => group.choices || group.option_choices || [];
+
     // Form State
     const [quantity, setQuantity] = useState(1);
     const [notes, setNotes] = useState('');
@@ -22,8 +25,9 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
         // Auto-select first choice for price replacement (single-select) groups
         const initial: Record<number, number[]> = {};
         item.options?.forEach(group => {
-            if (group.is_price_replacement && group.max_selection === 1 && group.choices && group.choices.length > 0) {
-                initial[group.id] = [group.choices[0].id];
+            const choices = group.choices || group.option_choices || [];
+            if (group.is_price_replacement && group.max_selection === 1 && choices.length > 0) {
+                initial[group.id] = [choices[0].id];
             }
         });
         return initial;
@@ -31,32 +35,35 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
 
     // Calculate Dynamic Price
     const calculateTotal = () => {
-        let basePrice = item.current_price || item.base_price;
-        let replacementPrice = 0;
-        let extrasPrice = 0;
-        let hasReplacementGroup = false;
+        let replacementPriceTotal = 0;
+        let hasReplacementPrice = false;
+        let modifiersTotal = 0;
 
         // Process options
         item.options?.forEach((group: MenuOptionGroup) => {
             const selectedIds = selections[group.id] || [];
+            const choices = group.choices || group.option_choices || [];
             selectedIds.forEach(id => {
-                const choice = group.choices?.find((c: MenuOptionChoice) => c.id === id);
+                const choice = choices.find((c: MenuOptionChoice) => c.id === id);
                 if (choice) {
                     if (group.is_price_replacement) {
-                        hasReplacementGroup = true;
-                        replacementPrice += choice.price_modifier;
+                        hasReplacementPrice = true;
+                        replacementPriceTotal += choice.price_modifier;
                     } else {
-                        extrasPrice += choice.price_modifier;
+                        modifiersTotal += choice.price_modifier;
                     }
                 }
             });
         });
 
-        // If we have a replacement group (like sizes), use its price as base
-        // Otherwise use the item's base price
-        const finalPrice = hasReplacementGroup ? replacementPrice : basePrice;
+        let total = 0;
+        if (hasReplacementPrice) {
+            total = replacementPriceTotal + modifiersTotal;
+        } else {
+            total = (item.current_price || item.base_price) + modifiersTotal;
+        }
 
-        return (finalPrice + extrasPrice) * quantity;
+        return total * quantity;
     };
 
     const handleOptionToggle = (groupId: number, choiceId: number, maxSelection: number) => {
@@ -93,8 +100,9 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
         Object.keys(selections).forEach(gId => {
             const groupId = parseInt(gId);
             const group = item.options?.find((g: MenuOptionGroup) => g.id === groupId);
+            const choices = group?.choices || group?.option_choices || [];
             selections[groupId].forEach(cId => {
-                const choice = group?.choices?.find((c: MenuOptionChoice) => c.id === cId);
+                const choice = choices.find((c: MenuOptionChoice) => c.id === cId);
                 if (choice) {
                     selectedOptionsList.push({
                         groupId,
@@ -164,7 +172,7 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    {group.choices?.map((choice: MenuOptionChoice) => {
+                                    {getChoices(group).map((choice: MenuOptionChoice) => {
                                         const isSelected = selections[group.id]?.includes(choice.id);
                                         return (
                                             <label

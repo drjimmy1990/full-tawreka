@@ -53,7 +53,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     {/* Options Display */}
                                     <div className="text-xs text-gray-500 space-y-0.5">
                                         {item.selectedOptions?.map((opt, i) => (
-                                            <span key={i} className="block">• {opt.name}</span>
+                                            <span key={i} className="flex justify-between">
+                                                <span>• {opt.name}</span>
+                                                {opt.price > 0 && <span className="text-gray-400">+{opt.price}</span>}
+                                            </span>
                                         ))}
                                     </div>
                                 </div>
