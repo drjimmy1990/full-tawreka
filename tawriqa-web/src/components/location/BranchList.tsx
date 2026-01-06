@@ -57,7 +57,7 @@ export default function BranchList() {
                     </div>
                     <div className="flex-1">
                         <h3 className="font-bold text-gray-800 text-sm mb-1">{branch.name}</h3>
-                        <p className="text-xs text-gray-500 mb-1 line-clamp-2">{branch.address}</p>
+                        <p className="text-xs text-gray-500 mb-1 line-clamp-2">{branch.phone_contact || ''}</p>
 
                         {branch.opening_time && (
                             <div className="flex items-center gap-2 text-[10px] text-gray-400">

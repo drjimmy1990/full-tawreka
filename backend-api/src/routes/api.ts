@@ -2,7 +2,7 @@ import { Router } from 'express';
 // Import the new controller
 import { checkCoverage, getAvailableZones } from '../controllers/geoController';
 import { createOrder, getOrder, updateOrderStatus, requestModification } from '../controllers/orderController';
-import { getBranchMenu, getSiteSettings } from '../controllers/menuController';
+import { getBranchMenu, getBranches, getSiteSettings } from '../controllers/menuController';
 import { verifyApiKey } from '../middleware/auth';
 
 const router = Router();
@@ -29,7 +29,8 @@ router.get('/settings', getSiteSettings);
 router.post('/geo/check-coverage', checkCoverage); // <--- Moved to Public
 router.get('/geo/zones', getAvailableZones);       // <--- NEW
 
-// 3. Menu & Tracking
+// 3. Menu & Branches
+router.get('/branches', getBranches);            // <--- NEW: List all active branches
 router.get('/branches/:id/menu', getBranchMenu);
 router.get('/orders/:id', getOrder); // "Track my Order" should be public (with UUID usually, but ID ok for now)
 

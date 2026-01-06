@@ -114,7 +114,7 @@ export const api = {
     // ==========================================
     getBranches: async (): Promise<Branch[]> => {
         try {
-            const { data } = await supabaseClient.get('/branches?is_active=eq.true&select=id,name,address,lat,lng,zones,opening_time,closing_time');
+            const { data } = await apiClient.get('/branches');
             return data || [];
         } catch (e) {
             console.error('Failed to fetch branches:', e);

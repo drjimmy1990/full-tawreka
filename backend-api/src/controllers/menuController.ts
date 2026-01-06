@@ -20,6 +20,21 @@ export const getSiteSettings = async (req: Request, res: Response) => {
     }
 };
 
+// 2. Get All Active Branches
+export const getBranches = async (req: Request, res: Response) => {
+    try {
+        const { data, error } = await supabase
+            .from('branches')
+            .select('id, name, phone_contact, zones, opening_time, closing_time')
+            .eq('is_active', true);
+
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // 2. Get Menu with Branch-Specific Prices
 export const getBranchMenu = async (req: Request, res: Response) => {
     try {

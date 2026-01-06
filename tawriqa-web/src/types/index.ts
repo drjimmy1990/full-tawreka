@@ -1,12 +1,11 @@
 export interface Branch {
     id: number;
     name: string;
-    address: string;
-    lat: number;
-    lng: number;
+    phone_contact?: string;
+    zones?: any;
     opening_time?: string;
     closing_time?: string;
-    is_active: boolean;
+    is_active?: boolean;
 }
 
 // Menu Options Types
