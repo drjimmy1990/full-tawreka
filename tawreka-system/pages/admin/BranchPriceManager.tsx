@@ -11,6 +11,7 @@ const BranchPriceManager: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState<number | null>(null); // track which item is saving
     const [expandedItem, setExpandedItem] = useState<number | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState<number | null>(null); // track which item just saved
 
     useEffect(() => {
         loadBranches();
@@ -41,28 +42,31 @@ const BranchPriceManager: React.FC = () => {
         setSelectedBranch(branchId);
         loadBranchMenu(branchId);
         setExpandedItem(null);
+        setSaveSuccess(null);
     };
 
     const handleUpdate = async (item: any, newPrice: number, newActive: boolean) => {
         if (!selectedBranch) return;
         setSaving(item.id);
+        setSaveSuccess(null);
 
-        // Gather choice prices if expanded
+        // Gather choice prices if expanded - FIXED: use option_choices instead of choices
         const choicePrices: Record<string, number> = {};
         if (item.options && item.options.length > 0) {
             item.options.forEach((group: any) => {
-                group.choices?.forEach((choice: any) => {
+                // Use option_choices which is what the data structure actually provides
+                const choices = group.option_choices || group.choices || [];
+                choices.forEach((choice: any) => {
                     const inputId = `price-choice-${item.id}-${choice.id}`;
                     const customInput = document.getElementById(inputId) as HTMLInputElement;
                     if (customInput && customInput.value) {
-                        // Only save if different from global? No, we need to save what's there if it's an override.
-                        // Actually, we expect the user to input the specific price for this branch.
-                        // If empty, maybe fallback? For now let's save what is keyed in.
-                        choicePrices[choice.id] = parseFloat(customInput.value);
+                        choicePrices[choice.id.toString()] = parseFloat(customInput.value);
                     }
                 });
             });
         }
+
+        console.log('Saving choice prices:', choicePrices); // Debug log
 
         try {
             await api.updateBranchPrice(selectedBranch, item.id, newPrice, newActive, choicePrices);
@@ -83,6 +87,10 @@ const BranchPriceManager: React.FC = () => {
                 }
                 return i;
             }));
+
+            // Show success feedback
+            setSaveSuccess(item.id);
+            setTimeout(() => setSaveSuccess(null), 2000);
 
         } catch (e) {
             alert(t('prices.update_failed'));
@@ -238,9 +246,24 @@ const BranchPriceManager: React.FC = () => {
                                                             );
                                                         }}
                                                         disabled={saving === item.id}
-                                                        className="text-blue-600 hover:text-blue-800 font-bold text-xs border border-blue-200 bg-blue-50 px-3 py-1.5 rounded hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                                                        className={`font-bold text-xs px-3 py-1.5 rounded transition-all ${saveSuccess === item.id
+                                                                ? 'text-green-600 border border-green-200 bg-green-50'
+                                                                : 'text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 hover:bg-blue-100'
+                                                            } disabled:opacity-50`}
                                                     >
-                                                        {saving === item.id ? t('prices.saving') : t('prices.save')}
+                                                        {saving === item.id ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                                {t('prices.saving')}
+                                                            </span>
+                                                        ) : saveSuccess === item.id ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <CheckCircle className="w-3 h-3" />
+                                                                {t('prices.saved') || 'تم الحفظ'}
+                                                            </span>
+                                                        ) : (
+                                                            t('prices.save')
+                                                        )}
                                                     </button>
                                                 </td>
                                             </tr>

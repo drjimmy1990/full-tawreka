@@ -20,6 +20,7 @@ const translations: Record<string, Record<string, string>> = {
         'landing.feature_3_title': 'تجربة أكل ما تتنسيش',
         'landing.feature_3_desc': 'رحلة بتبدأ من تراث مصر. بنوعدك لنكهات جديدة مبتكرة. كل فطيرة معمولة بحب.',
         'landing.contact_title': 'تواصلك معانا بيسعدنا',
+        'landing.home': 'الرئيسية',
         'landing.menu': 'المنيو',
         'landing.about': 'عن توريقة',
         'landing.contact_us': 'اتصل بنا',
@@ -72,12 +73,30 @@ const translations: Record<string, Record<string, string>> = {
         'checkout.success': 'تم استلام طلبك بنجاح!',
         'checkout.order_id': 'رقم الطلب',
 
+        // Contact Form
+        'contact.name_placeholder': 'الاسم الكامل',
+        'contact.phone_placeholder': 'رقم الهاتف',
+        'contact.email_placeholder': 'البريد الإلكتروني (اختياري)',
+        'contact.message_placeholder': 'رسالتك...',
+        'contact.submit': 'إرسال الرسالة',
+        'contact.required_fields': 'يرجى ملء جميع الحقول المطلوبة',
+        'contact.success_title': 'تم إرسال رسالتك بنجاح!',
+        'contact.success_message': 'سنتواصل معك في أقرب وقت',
+        'contact.send_another': 'إرسال رسالة أخرى',
+        'contact.form_title': 'راسلنا',
+        'contact.form_subtitle': 'اكتب رسالتك وهنرد عليك',
+        'contact.call_title': 'كلمنا',
+        'contact.call_subtitle': 'هنكون دايماً مبسوطين بتواصلكم معانا!',
+        'contact.social_title': 'تابعنا',
+        'contact.social_subtitle': 'شوف أحلى أكلاتنا',
+
         // Common
         'common.loading': 'جاري التحميل...',
         'common.error': 'حدث خطأ',
         'common.retry': 'إعادة المحاولة',
         'common.back': 'رجوع',
         'common.currency': 'ج.م',
+        'common.minutes': 'دقيقة',
     },
     en: {
         // Landing
@@ -97,6 +116,7 @@ const translations: Record<string, Record<string, string>> = {
         'landing.feature_3_title': 'Unforgettable Dining Experience',
         'landing.feature_3_desc': 'A journey starting from Egypt\'s heritage. We promise you innovative new flavors. Every pie made with love.',
         'landing.contact_title': 'We\'d love to hear from you',
+        'landing.home': 'Home',
         'landing.menu': 'Menu',
         'landing.about': 'About Tawriqa',
         'landing.contact_us': 'Contact Us',
@@ -149,12 +169,30 @@ const translations: Record<string, Record<string, string>> = {
         'checkout.success': 'Order received successfully!',
         'checkout.order_id': 'Order ID',
 
+        // Contact Form
+        'contact.name_placeholder': 'Full Name',
+        'contact.phone_placeholder': 'Phone Number',
+        'contact.email_placeholder': 'Email (optional)',
+        'contact.message_placeholder': 'Your message...',
+        'contact.submit': 'Send Message',
+        'contact.required_fields': 'Please fill in all required fields',
+        'contact.success_title': 'Message sent successfully!',
+        'contact.success_message': 'We will get back to you soon',
+        'contact.send_another': 'Send another message',
+        'contact.form_title': 'Send us a message',
+        'contact.form_subtitle': 'Write your message and we will respond',
+        'contact.call_title': 'Call Us',
+        'contact.call_subtitle': 'We are always happy to hear from you!',
+        'contact.social_title': 'Follow Us',
+        'contact.social_subtitle': 'See our latest dishes',
+
         // Common
         'common.loading': 'Loading...',
         'common.error': 'An error occurred',
         'common.retry': 'Retry',
         'common.back': 'Back',
         'common.currency': 'EGP',
+        'common.minutes': 'min',
     },
     ru: {
         // Landing
@@ -174,6 +212,7 @@ const translations: Record<string, Record<string, string>> = {
         'landing.feature_3_title': 'Незабываемый опыт',
         'landing.feature_3_desc': 'Путешествие начинается с наследия Египта.',
         'landing.contact_title': 'Мы будем рады услышать вас',
+        'landing.home': 'Главная',
         'landing.menu': 'Меню',
         'landing.about': 'О Tawriqa',
         'landing.contact_us': 'Свяжитесь с нами',
@@ -226,12 +265,30 @@ const translations: Record<string, Record<string, string>> = {
         'checkout.success': 'Заказ успешно получен!',
         'checkout.order_id': 'Номер заказа',
 
+        // Contact Form
+        'contact.name_placeholder': 'Полное имя',
+        'contact.phone_placeholder': 'Номер телефона',
+        'contact.email_placeholder': 'Email (необязательно)',
+        'contact.message_placeholder': 'Ваше сообщение...',
+        'contact.submit': 'Отправить сообщение',
+        'contact.required_fields': 'Заполните все обязательные поля',
+        'contact.success_title': 'Сообщение отправлено!',
+        'contact.success_message': 'Мы свяжемся с вами в ближайшее время',
+        'contact.send_another': 'Отправить ещё',
+        'contact.form_title': 'Напишите нам',
+        'contact.form_subtitle': 'Отправьте сообщение и мы ответим',
+        'contact.call_title': 'Позвоните нам',
+        'contact.call_subtitle': 'Мы всегда рады вашему звонку!',
+        'contact.social_title': 'Подпишитесь',
+        'contact.social_subtitle': 'Смотрите наши новинки',
+
         // Common
         'common.loading': 'Загрузка...',
         'common.error': 'Произошла ошибка',
         'common.retry': 'Повторить',
         'common.back': 'Назад',
         'common.currency': 'EGP',
+        'common.minutes': 'мин',
     },
 };
 

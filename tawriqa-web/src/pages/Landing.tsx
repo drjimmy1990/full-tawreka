@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import UserHeader from '../components/layout/UserHeader';
-import { Facebook, Instagram, Twitter, Phone, MapPin, Mail, UtensilsCrossed } from 'lucide-react';
+import ContactForm from '../components/common/ContactForm';
+import { Facebook, Instagram, Twitter, Phone, MapPin, UtensilsCrossed, MessageSquare } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import useTranslation from '../hooks/useTranslation';
 import { useSettingsStore } from '../store';
@@ -60,7 +61,7 @@ export default function Landing() {
                         <Button
                             variant="outline" // Used outline but with white text handling manually below
                             size="lg"
-                            onClick={() => navigate('/menu')}
+                            onClick={() => navigate('/location?redirect=menu')}
                             className="min-w-[200px] border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm bg-white/5"
                             rightIcon={<UtensilsCrossed className="w-5 h-5" />}
                         >
@@ -183,15 +184,15 @@ export default function Landing() {
                         <h2 className="text-4xl md:text-5xl font-bold">{t('landing.contact_title')}</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Card 1: Contact Info */}
                         <div className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 hover:border-primary/50 transition-all hover:-translate-y-2 group">
                             <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                 <Phone className="w-7 h-7" />
                             </div>
-                            <h3 className="font-bold text-xl mb-2">Call Center</h3>
-                            <p className="text-gray-400 text-sm mb-6">Available 24/7 for orders</p>
-                            <a href="tel:19019" className="text-2xl font-bold text-white hover:text-secondary transition-colors">19019</a>
+                            <h3 className="font-bold text-xl mb-2">{t('contact.call_title')}</h3>
+                            <p className="text-gray-400 text-sm mb-6">{t('contact.call_subtitle')}</p>
+                            <a href="tel:+20248832036" className="text-2xl font-bold text-white hover:text-secondary transition-colors">+20 24 883 2036</a>
                         </div>
 
                         {/* Card 2: Social Media */}
@@ -199,8 +200,8 @@ export default function Landing() {
                             <div className="w-14 h-14 bg-secondary/20 rounded-2xl flex items-center justify-center mb-6 text-secondary group-hover:bg-secondary group-hover:text-white transition-colors">
                                 <Instagram className="w-7 h-7" />
                             </div>
-                            <h3 className="font-bold text-xl mb-2">Follow Us</h3>
-                            <p className="text-gray-400 text-sm mb-6">See our latest dishes</p>
+                            <h3 className="font-bold text-xl mb-2">{t('contact.social_title')}</h3>
+                            <p className="text-gray-400 text-sm mb-6">{t('contact.social_subtitle')}</p>
                             <div className="flex gap-4">
                                 <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Facebook className="w-5 h-5" /></a>
                                 <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Instagram className="w-5 h-5" /></a>
@@ -208,14 +209,18 @@ export default function Landing() {
                             </div>
                         </div>
 
-                        {/* Card 3: Email */}
-                        <div className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 transition-all hover:-translate-y-2 group">
-                            <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                                <Mail className="w-7 h-7" />
+                        {/* Card 3: Contact Form (spans full width on mobile, half on desktop) */}
+                        <div className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 md:col-span-2">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center text-primary">
+                                    <MessageSquare className="w-7 h-7" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-xl">{t('contact.form_title')}</h3>
+                                    <p className="text-gray-400 text-sm">{t('contact.form_subtitle')}</p>
+                                </div>
                             </div>
-                            <h3 className="font-bold text-xl mb-2">Email Us</h3>
-                            <p className="text-gray-400 text-sm mb-6">For suggestions & complaints</p>
-                            <a href="mailto:contact@tawriqa.com" className="text-lg font-bold text-white hover:text-secondary transition-colors truncate block">contact@tawriqa.com</a>
+                            <ContactForm />
                         </div>
                     </div>
                 </div>

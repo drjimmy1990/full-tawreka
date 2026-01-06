@@ -31,7 +31,8 @@ export default function UserHeader({ variant = 'default' }: UserHeaderProps) {
 
     // Navigation Items Config
     const navItems = [
-        { key: 'menu', action: () => navigate('/menu') },
+        { key: 'home', action: () => navigate('/') },
+        { key: 'menu', action: () => navigate('/location?redirect=menu') },
         { key: 'about', action: () => scrollTo('story') }, // <--- Use scrollTo
         { key: 'contact_us', action: () => scrollTo('contact') } // <--- Use scrollTo
     ];

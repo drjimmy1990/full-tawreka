@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useTranslation from '../hooks/useTranslation';
 import CategoryBar from '../components/menu/CategoryBar';
 import MenuItemCard from '../components/menu/MenuItemCard';
@@ -10,10 +11,18 @@ import api from '../lib/api';
 import type { MenuItem } from '../types';
 
 export default function Menu() {
+    const navigate = useNavigate();
     const { t, lang } = useTranslation();
     const { settings } = useSettingsStore();
     const { serviceType, branch } = useLocationStore();
     const { getItemCount, getTotal } = useCartStore();
+
+    // Guard: Redirect to location if no branch selected
+    useEffect(() => {
+        if (!branch) {
+            navigate('/location?redirect=menu');
+        }
+    }, [branch, navigate]);
 
     // State
     const [categories, setCategories] = useState<any[]>([]);
@@ -99,7 +108,8 @@ export default function Menu() {
                         <div className="flex-1">
                             <h1 className="font-bold text-lg text-gray-900">{settings?.brand_name_ar || 'توريقة'}</h1>
                             <p className="text-xs text-gray-500">
-                                {serviceType === 'delivery' ? t('landing.delivery') : t('landing.pickup')} • 35-45 {t('common.min_time') || 'min'}
+                                {branch?.name && <span className="text-primary font-bold">{branch.name} • </span>}
+                                {serviceType === 'delivery' ? t('landing.delivery') : t('landing.pickup')} • 35-45 {t('common.minutes')}
                             </p>
                         </div>
                         <div className="text-center bg-green-50 px-3 py-1 rounded-lg">

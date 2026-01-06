@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MapPin, Clock, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
 import type { Branch } from '../../lib/api';
@@ -8,8 +8,10 @@ import useTranslation from '../../hooks/useTranslation';
 
 export default function BranchList() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const redirectTo = '/' + (searchParams.get('redirect') || 'menu');
     const { t, lang } = useTranslation();
-    const { setBranch } = useLocationStore();
+    const { setBranch, setServiceType } = useLocationStore();
     const [branches, setBranches] = useState<Branch[]>([]);
     const [loading, setLoading] = useState(true);
     const Arrow = lang === 'ar' ? ChevronRight : ChevronRight; // Icon logic might need adjustment based on RTL, but usually chevron points 'forward'
@@ -30,8 +32,9 @@ export default function BranchList() {
     };
 
     const handleSelectBranch = (branch: Branch) => {
+        setServiceType('pickup');
         setBranch(branch);
-        navigate('/menu');
+        navigate(redirectTo);
     };
 
     if (loading) {

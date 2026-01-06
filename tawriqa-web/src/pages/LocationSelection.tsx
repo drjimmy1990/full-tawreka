@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MapPin, Store, Navigation, Loader2 } from 'lucide-react';
 import { useLocationStore, useSettingsStore } from '../store';
 import useTranslation from '../hooks/useTranslation';
@@ -11,6 +11,8 @@ import { api } from '../lib/api';
 
 export default function LocationSelection() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const redirectTo = '/' + (searchParams.get('redirect') || 'menu');
     const { t } = useTranslation();
     const { setServiceType, setBranch, setDeliveryLocation, deliveryAddress } = useLocationStore();
     const { settings } = useSettingsStore();
@@ -50,8 +52,8 @@ export default function LocationSelection() {
                 // 3. Save Delivery Details
                 setDeliveryLocation(address, lat, lng, result.delivery_fee, result.zone_name);
 
-                // 4. Go to Menu
-                navigate('/menu');
+                // 4. Go to destination (from redirect param or default to menu)
+                navigate(redirectTo);
             } else {
                 setErrorMsg(t('location.not_covered'));
             }
