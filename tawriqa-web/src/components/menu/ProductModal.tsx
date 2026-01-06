@@ -31,9 +31,10 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
 
     // Calculate Dynamic Price
     const calculateTotal = () => {
-        let total = item.current_price || item.base_price;
-        let hasReplacementPrice = false;
-        let replacementPriceTotal = 0;
+        let basePrice = item.current_price || item.base_price;
+        let replacementPrice = 0;
+        let extrasPrice = 0;
+        let hasReplacementGroup = false;
 
         // Process options
         item.options?.forEach((group: MenuOptionGroup) => {
@@ -42,20 +43,20 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
                 const choice = group.choices?.find((c: MenuOptionChoice) => c.id === id);
                 if (choice) {
                     if (group.is_price_replacement) {
-                        hasReplacementPrice = true;
-                        replacementPriceTotal += choice.price_modifier;
+                        hasReplacementGroup = true;
+                        replacementPrice += choice.price_modifier;
                     } else {
-                        total += choice.price_modifier;
+                        extrasPrice += choice.price_modifier;
                     }
                 }
             });
         });
 
-        if (hasReplacementPrice) {
-            total = replacementPriceTotal + (total - (item.current_price || item.base_price));
-        }
+        // If we have a replacement group (like sizes), use its price as base
+        // Otherwise use the item's base price
+        const finalPrice = hasReplacementGroup ? replacementPrice : basePrice;
 
-        return total * quantity;
+        return (finalPrice + extrasPrice) * quantity;
     };
 
     const handleOptionToggle = (groupId: number, choiceId: number, maxSelection: number) => {

@@ -132,6 +132,7 @@ const MenuBuilder: React.FC = () => {
     // Open category modal
     const openCatModal = (cat: any = null) => {
         setEditingCategory(cat);
+        setImageUrl(cat?.image_url || ''); // Set image URL or empty
         setActiveLang('ar');
         setIsCatModalOpen(true);
     };
@@ -161,6 +162,7 @@ const MenuBuilder: React.FC = () => {
             name_en: formData.get('name_en'),
             name_other: formData.get('name_other'),
             sort_order: parseInt(formData.get('sort_order') as string) || 0,
+            image_url: imageUrl, // Include image URL
             is_active: true
         };
 
@@ -402,6 +404,45 @@ const MenuBuilder: React.FC = () => {
                                     <div className="border-t pt-4">
                                         <label className="text-xs font-bold text-gray-500">{t('menu.sort_order')}</label>
                                         <input type="number" name="sort_order" defaultValue={editingCategory?.sort_order || 0} className="w-full border p-2 rounded mt-1" />
+                                    </div>
+
+                                    {/* IMAGE UPLOAD SECTION (Category) */}
+                                    <div className="pt-2">
+                                        <label className="text-xs font-bold text-gray-500 mb-1 block">{t('menu.image_url')}</label>
+                                        <div className="flex gap-2 items-center">
+                                            <input
+                                                type="file"
+                                                id="cat-file-upload"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleFileUpload}
+                                            />
+                                            <input
+                                                name="image_url"
+                                                value={imageUrl}
+                                                onChange={(e) => setImageUrl(e.target.value)}
+                                                className="flex-1 border p-2 rounded text-sm bg-gray-50"
+                                                placeholder="https://..."
+                                            />
+                                            <label
+                                                htmlFor="cat-file-upload"
+                                                className={`p-2 rounded cursor-pointer transition-colors ${uploading ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                                            >
+                                                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                                            </label>
+                                        </div>
+                                        {imageUrl && (
+                                            <div className="mt-2 relative w-full h-32 bg-gray-100 rounded overflow-hidden group">
+                                                <img src={imageUrl} alt="Category" className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button" // Prevent form submission
+                                                    onClick={() => setImageUrl('')}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="pt-4 flex justify-end">
