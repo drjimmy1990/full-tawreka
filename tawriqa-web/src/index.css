@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+    /* --- THEME VARIABLES (Controlled by Zustand/Admin) --- */
+    --color-primary: #415A3E;
+    /* Tawriqa Olive */
+    --color-primary-dark: #2E402C;
+    /* Darker Olive for hover */
+    --color-secondary: #CCA876;
+    /* Golden Brown */
+    --color-background: #F9FAFB;
+    /* Light Gray Page BG */
+    --color-surface: #FFFFFF;
+    /* White Card BG */
+
+    /* --- TYPOGRAPHY --- */
+    --font-cairo: 'Cairo', sans-serif;
+}
+
+@theme {
+    /* Map CSS variables to Tailwind classes */
+    --color-primary: var(--color-primary);
+    --color-primary-dark: var(--color-primary-dark);
+    --color-secondary: var(--color-secondary);
+    --color-background: var(--color-background);
+    --color-surface: var(--color-surface);
+
+    --font-sans: var(--font-cairo);
+
+    /* Standardize Shadows */
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* Global Reset */
+body {
+    background-color: var(--color-background);
+    color: #1F2937;
+    font-family: var(--font-cairo);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* Hide Scrollbar util */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
