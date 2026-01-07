@@ -31,10 +31,19 @@ export default function UserHeader({ variant = 'default' }: UserHeaderProps) {
 
     // Navigation Items Config
     const navItems = [
-        { key: 'home', action: () => navigate('/') },
+        {
+            key: 'home', action: () => {
+                // If on menu page, scroll to top; otherwise go home
+                if (window.location.pathname === '/menu') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    navigate('/');
+                }
+            }
+        },
         { key: 'menu', action: () => navigate('/location?redirect=menu') },
-        { key: 'about', action: () => scrollTo('story') }, // <--- Use scrollTo
-        { key: 'contact_us', action: () => scrollTo('contact') } // <--- Use scrollTo
+        { key: 'about', action: () => scrollTo('story') },
+        { key: 'contact_us', action: () => scrollTo('contact') }
     ];
 
     return (

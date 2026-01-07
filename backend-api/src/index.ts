@@ -21,6 +21,6 @@ app.get('/', (req, res) => {
     res.send('Geo-Aware RMS Backend is Running');
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server listening on http://localhost:${PORT}`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`🚀 Server listening on http://0.0.0.0:${PORT}`);
 });

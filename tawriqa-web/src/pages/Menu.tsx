@@ -57,9 +57,6 @@ export default function Menu() {
         fetchMenu();
     }, [branch]);
 
-    // Derived state: Active Category Object and its Items
-    const currentCategory = categories.find(c => c.id === activeCategory);
-    const currentItems = currentCategory?.items || [];
     const cartCount = getItemCount();
 
     // Helper to calculate "From" price for items with variations
@@ -123,42 +120,57 @@ export default function Menu() {
             {/* Spacer for Hero Content overlapping */}
             <div className="h-14"></div>
 
-            {/* Sticky Category Bar */}
+            {/* Sticky Category Bar - scrolls to sections */}
             <CategoryBar
                 activeCategory={activeCategory}
-                onSelect={setActiveCategory}
-                categories={categories} // Now passing real categories
+                onSelect={(catId) => {
+                    setActiveCategory(catId);
+                    // Scroll to the category section
+                    const section = document.getElementById(`category-${catId}`);
+                    if (section) {
+                        const offset = 140; // header + category bar height
+                        const top = section.getBoundingClientRect().top + window.scrollY - offset;
+                        window.scrollTo({ top, behavior: 'smooth' });
+                    }
+                }}
+                categories={categories}
             />
 
-            {/* Menu Items (Real Components) */}
-            <div className="p-4 space-y-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="font-bold text-xl text-gray-800 animate-in slide-in-from-start-4">
-                        {lang === 'ar' ? currentCategory?.name_ar : (currentCategory?.name_en || currentCategory?.name_ar)}
-                    </h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-bottom-4 duration-500">
-                    {currentItems.length > 0 ? (
-                        currentItems.map((item: any) => (
-                            <MenuItemCard
-                                key={item.id}
-                                id={item.id}
-                                name={lang === 'ar' ? item.name_ar : (item.name_en || item.name_ar)}
-                                description={lang === 'ar' ? item.description_ar : (item.description_en || item.description_ar)}
-                                price={item.current_price || item.base_price}
-                                image={item.image_url || `https://source.unsplash.com/random/400x400?food,plate&sig=${item.id}`}
-                                hasOptions={item.options && item.options.length > 0}
-                                minPrice={calculateMinPrice(item)}
-                                onAdd={() => setSelectedItem(item)}
-                            /> // item passed to onAdd is used to set selectedItem
-                        ))
-                    ) : (
-                        <div className="col-span-full py-10 text-center text-gray-400">
-                            No items found in this category.
+            {/* All Menu Items Grouped by Category */}
+            <div className="p-4 space-y-8">
+                {categories.map((category: any) => (
+                    <div key={category.id} id={`category-${category.id}`} className="scroll-mt-36">
+                        {/* Category Header */}
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="font-bold text-xl text-gray-800">
+                                {lang === 'ar' ? category.name_ar : (category.name_en || category.name_ar)}
+                            </h2>
                         </div>
-                    )}
-                </div>
+
+                        {/* Items Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {category.items && category.items.length > 0 ? (
+                                category.items.map((item: any) => (
+                                    <MenuItemCard
+                                        key={item.id}
+                                        id={item.id}
+                                        name={lang === 'ar' ? item.name_ar : (item.name_en || item.name_ar)}
+                                        description={lang === 'ar' ? item.description_ar : (item.description_en || item.description_ar)}
+                                        price={item.current_price || item.base_price}
+                                        image={item.image_url || `https://source.unsplash.com/random/400x400?food,plate&sig=${item.id}`}
+                                        hasOptions={item.options && item.options.length > 0}
+                                        minPrice={calculateMinPrice(item)}
+                                        onAdd={() => setSelectedItem(item)}
+                                    />
+                                ))
+                            ) : (
+                                <div className="col-span-full py-6 text-center text-gray-400 text-sm">
+                                    {t('menu.no_items') || 'لا توجد أصناف في هذا القسم'}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Floating Cart Button */}

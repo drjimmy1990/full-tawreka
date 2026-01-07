@@ -13,7 +13,7 @@ export default function CategoryBar({ activeCategory, onSelect, categories }: Ca
     const scrollRef = useRef<HTMLDivElement>(null);
 
     return (
-        <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-100">
+        <div className="sticky top-16 z-30 bg-white shadow-sm border-b border-gray-100">
             <div
                 ref={scrollRef}
                 className="flex items-center gap-3 overflow-x-auto p-4 scrollbar-hide scroll-smooth"
