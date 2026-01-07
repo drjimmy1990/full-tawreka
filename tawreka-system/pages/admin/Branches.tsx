@@ -179,12 +179,52 @@ const Branches: React.FC = () => {
           <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">System Name</label>
                 <input type="text" value={editingBranch.name} onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name (Arabic)</label>
+                  <input type="text" value={(editingBranch as any).name_ar || ''} onChange={(e) => setEditingBranch({ ...editingBranch, name_ar: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="القاهرة - المعادي" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name (English)</label>
+                  <input type="text" value={(editingBranch as any).name_en || ''} onChange={(e) => setEditingBranch({ ...editingBranch, name_en: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="Cairo - Maadi" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address (Arabic)</label>
+                  <input type="text" value={(editingBranch as any).address_ar || ''} onChange={(e) => setEditingBranch({ ...editingBranch, address_ar: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="المعادي بارك مول" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address (English)</label>
+                  <input type="text" value={(editingBranch as any).address_en || ''} onChange={(e) => setEditingBranch({ ...editingBranch, address_en: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="Maadi Park Mall" />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                 <input type="text" value={editingBranch.phone_contact} onChange={(e) => setEditingBranch({ ...editingBranch, phone_contact: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
+                  <input type="time" value={editingBranch.opening_time || ''} onChange={(e) => setEditingBranch({ ...editingBranch, opening_time: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
+                  <input type="time" value={editingBranch.closing_time || ''} onChange={(e) => setEditingBranch({ ...editingBranch, closing_time: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Google Maps Embed URL</label>
+                <input type="text" value={(editingBranch as any).google_maps_embed || ''} onChange={(e) => setEditingBranch({ ...editingBranch, google_maps_embed: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2 text-xs" placeholder="https://www.google.com/maps/embed?pb=..." />
+                <p className="text-xs text-gray-400 mt-1">Get from Google Maps &gt; Share &gt; Embed a map</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Google Maps Link</label>
+                <input type="text" value={(editingBranch as any).google_maps_link || ''} onChange={(e) => setEditingBranch({ ...editingBranch, google_maps_link: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2 text-xs" placeholder="https://maps.google.com/?q=..." />
+                <p className="text-xs text-gray-400 mt-1">Link for "Get Directions" button</p>
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <input type="checkbox" id="active" checked={editingBranch.is_active} onChange={(e) => setEditingBranch({ ...editingBranch, is_active: e.target.checked })} />

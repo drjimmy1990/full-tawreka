@@ -9,6 +9,7 @@ import { Button } from '../components/common/Button';
 import useTranslation from '../hooks/useTranslation';
 import { useSettingsStore } from '../store';
 import { useScrollTo } from '../hooks/useScrollTo';
+import BranchesSection from '../components/landing/BranchesSection';
 
 export default function Landing() {
     const navigate = useNavigate();
@@ -184,6 +185,9 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
+
+            {/* --- Our Branches Section --- */}
+            <BranchesSection />
 
             {/* --- REDESIGNED: Contact Section --- */}
             <section id="contact" className="py-24 bg-[#111] text-white relative">

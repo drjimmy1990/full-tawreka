@@ -193,9 +193,17 @@ export const api = {
         .from('branches')
         .update({
           name: branch.name,
+          name_ar: (branch as any).name_ar,
+          name_en: (branch as any).name_en,
           phone_contact: branch.phone_contact,
           zones: branch.zones,
-          is_active: branch.is_active
+          is_active: branch.is_active,
+          opening_time: (branch as any).opening_time,
+          closing_time: (branch as any).closing_time,
+          address_ar: (branch as any).address_ar,
+          address_en: (branch as any).address_en,
+          google_maps_embed: (branch as any).google_maps_embed,
+          google_maps_link: (branch as any).google_maps_link,
         })
         .eq('id', branch.id);
       if (error) throw error;

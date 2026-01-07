@@ -105,6 +105,13 @@ const translations: Record<string, Record<string, string>> = {
         'footer.terms': 'الشروط والأحكام',
         'footer.privacy': 'سياسة الخصوصية',
         'footer.about': 'عن توريقة',
+
+        // Branches
+        'landing.branches_title': 'فروعنا',
+        'landing.branches_subtitle': 'زورنا في أي فرع',
+        'branches.phone': 'رقم التليفون',
+        'branches.hours': 'ساعات العمل',
+        'branches.directions': 'الاتجاهات',
     },
     en: {
         // Landing
@@ -114,6 +121,11 @@ const translations: Record<string, Record<string, string>> = {
         'landing.delivery_desc': 'Order to any location in our coverage',
         'landing.pickup': 'Pickup',
         'landing.pickup_desc': 'Pick up from a branch near you',
+        'landing.branches_title': 'Our Branches',
+        'landing.branches_subtitle': 'Visit us at any branch',
+        'branches.phone': 'Phone',
+        'branches.hours': 'Working Hours',
+        'branches.directions': 'Directions',
         'landing.story_title': 'First story in Tawriqa\'s tale!',
         'landing.story_body': 'At Tawriqa, we serve authentic Egyptian Feteer in an innovative way. With premium ingredients and unique creativity, 100% Egyptian taste but with a new look that captures your heart!',
         'landing.features_title': 'Authentic Egyptian Taste',

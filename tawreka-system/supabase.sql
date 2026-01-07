@@ -774,3 +774,17 @@ VALUES
     'image',
     'Menu Page Cover Image'
 ) ON CONFLICT (key) DO NOTHING;
+
+-- =============================================
+-- PHASE 3: BRANCHES ENHANCEMENT FOR LANDING PAGE
+-- =============================================
+
+-- Add multilingual names and addresses to branches
+ALTER TABLE public.branches
+ADD COLUMN IF NOT EXISTS name_ar TEXT,
+ADD COLUMN IF NOT EXISTS name_en TEXT,
+ADD COLUMN IF NOT EXISTS address_ar TEXT,
+ADD COLUMN IF NOT EXISTS address_en TEXT,
+ADD COLUMN IF NOT EXISTS google_maps_embed TEXT, -- iframe embed URL for interactive map
+ADD COLUMN IF NOT EXISTS google_maps_link TEXT;
+-- clickable directions URL
