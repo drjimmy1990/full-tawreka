@@ -329,6 +329,14 @@ SELECT USING (true);
 -- Allow only Managers/Admins to UPDATE settings
 CREATE POLICY "Admins update settings" ON public.site_settings FOR
 UPDATE TO authenticated USING (true);
+-- Allow only Managers/Admins to INSERT new settings
+CREATE POLICY "Admins insert settings" ON public.site_settings FOR
+INSERT
+    TO authenticated
+WITH
+    CHECK (true);
+-- Allow only Managers/Admins to DELETE settings
+CREATE POLICY "Admins delete settings" ON public.site_settings FOR DELETE TO authenticated USING (true);
 
 -- 2. MENU CATEGORIES (e.g. "Sweet Feteer", "Drinks")
 CREATE TABLE IF NOT EXISTS public.menu_categories (
@@ -565,3 +573,204 @@ ADD COLUMN IF NOT EXISTS choice_prices JSONB DEFAULT '{}';
 ALTER TABLE public.branch_item_prices
 ADD COLUMN IF NOT EXISTS choice_prices JSONB DEFAULT '{}';
 -- Ensures existing tables get the column too
+
+-- =============================================
+-- PHASE 2: COMPREHENSIVE SITE SETTINGS
+-- =============================================
+
+INSERT INTO
+    public.site_settings (key, value, type, description)
+VALUES
+    -- Social Media (extended)
+    (
+        'tiktok_link',
+        '',
+        'text',
+        'TikTok URL'
+    ),
+    (
+        'twitter_link',
+        '',
+        'text',
+        'Twitter/X URL'
+    ),
+
+-- SEO Meta Tags
+(
+    'meta_description_ar',
+    'توريقة - أشهى الفطائر المصرية الأصيلة',
+    'text',
+    'SEO Meta Description (Arabic)'
+),
+(
+    'meta_description_en',
+    'Tawriqa - Authentic Egyptian pastries',
+    'text',
+    'SEO Meta Description (English)'
+),
+(
+    'meta_keywords_ar',
+    'فطير، توريقة، مصري، توصيل',
+    'text',
+    'SEO Keywords (Arabic)'
+),
+(
+    'meta_keywords_en',
+    'feteer, egyptian, pastry, delivery',
+    'text',
+    'SEO Keywords (English)'
+),
+(
+    'og_image_url',
+    '',
+    'image',
+    'Open Graph/Social Share Image'
+),
+(
+    'favicon_url',
+    '',
+    'image',
+    'Browser Favicon'
+),
+
+-- Page Titles
+(
+    'page_title_home_ar',
+    'الرئيسية',
+    'text',
+    'Home page title (Arabic)'
+),
+(
+    'page_title_menu_ar',
+    'المنيو',
+    'text',
+    'Menu page title (Arabic)'
+),
+(
+    'page_title_checkout_ar',
+    'إتمام الطلب',
+    'text',
+    'Checkout page title (Arabic)'
+),
+(
+    'page_title_location_ar',
+    'اختيار الموقع',
+    'text',
+    'Location page title (Arabic)'
+),
+(
+    'page_title_home_en',
+    'Home',
+    'text',
+    'Home page title (English)'
+),
+(
+    'page_title_menu_en',
+    'Menu',
+    'text',
+    'Menu page title (English)'
+),
+(
+    'page_title_checkout_en',
+    'Checkout',
+    'text',
+    'Checkout page title (English)'
+),
+(
+    'page_title_location_en',
+    'Location',
+    'text',
+    'Location page title (English)'
+),
+
+-- Business Info
+(
+    'address_ar',
+    '',
+    'text',
+    'Business Address (Arabic)'
+),
+(
+    'address_en',
+    '',
+    'text',
+    'Business Address (English)'
+),
+(
+    'working_hours_ar',
+    'يومياً من 10 صباحاً - 12 منتصف الليل',
+    'text',
+    'Working Hours (Arabic)'
+),
+(
+    'working_hours_en',
+    'Daily 10 AM - 12 AM',
+    'text',
+    'Working Hours (English)'
+),
+(
+    'email',
+    '',
+    'text',
+    'Contact Email'
+),
+(
+    'google_maps_link',
+    '',
+    'text',
+    'Google Maps URL'
+),
+
+-- Footer
+(
+    'footer_tagline_ar',
+    'بين الطبقات.. حكايات',
+    'text',
+    'Footer Tagline (Arabic)'
+),
+(
+    'footer_tagline_en',
+    'Stories between layers...',
+    'text',
+    'Footer Tagline (English)'
+),
+(
+    'footer_copyright_ar',
+    '© 2026 توريقة - جميع الحقوق محفوظة',
+    'text',
+    'Copyright Text (Arabic)'
+),
+(
+    'footer_copyright_en',
+    '© 2026 Tawriqa. All rights reserved.',
+    'text',
+    'Copyright Text (English)'
+),
+
+-- Legal Pages
+(
+    'terms_url',
+    '',
+    'text',
+    'Terms & Conditions URL'
+),
+(
+    'privacy_url',
+    '',
+    'text',
+    'Privacy Policy URL'
+),
+(
+    'about_url',
+    '',
+    'text',
+    'About Us URL'
+),
+
+-- Theme extras
+(
+    'menu_cover',
+    '',
+    'image',
+    'Menu Page Cover Image'
+) ON CONFLICT (key) DO NOTHING;

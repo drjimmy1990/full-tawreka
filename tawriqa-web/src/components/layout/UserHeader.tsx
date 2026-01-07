@@ -33,8 +33,8 @@ export default function UserHeader({ variant = 'default' }: UserHeaderProps) {
     const navItems = [
         {
             key: 'home', action: () => {
-                // If on menu page, scroll to top; otherwise go home
-                if (window.location.pathname === '/menu') {
+                // Only scroll on landing page, navigate home from all other pages
+                if (window.location.pathname === '/') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     navigate('/');

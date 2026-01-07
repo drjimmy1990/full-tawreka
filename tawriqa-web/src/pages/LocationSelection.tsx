@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { MapPin, Store, Navigation, Loader2 } from 'lucide-react';
 import { useLocationStore, useSettingsStore } from '../store';
 import useTranslation from '../hooks/useTranslation';
@@ -66,6 +67,11 @@ export default function LocationSelection() {
 
     return (
         <div className="min-h-screen relative flex items-center justify-center p-4">
+            {/* SEO Helmet */}
+            <Helmet>
+                <title>{settings?.brand_name_ar || 'توريقة'} - {settings?.page_title_location_ar || 'اختيار الموقع'}</title>
+            </Helmet>
+
             {/* Background */}
             <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }}>
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>

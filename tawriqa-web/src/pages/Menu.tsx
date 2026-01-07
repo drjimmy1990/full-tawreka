@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import useTranslation from '../hooks/useTranslation';
 import CategoryBar from '../components/menu/CategoryBar';
 import MenuItemCard from '../components/menu/MenuItemCard';
@@ -83,6 +84,11 @@ export default function Menu() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
+            {/* SEO Helmet */}
+            <Helmet>
+                <title>{settings?.brand_name_ar || 'توريقة'} - {settings?.page_title_menu_ar || 'المنيو'}</title>
+            </Helmet>
+
             {/* Shared Header (Overlay) - Disappears on scroll naturally */}
             <UserHeader variant="overlay" />
 

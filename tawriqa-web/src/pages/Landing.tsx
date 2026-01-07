@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import UserHeader from '../components/layout/UserHeader';
+import Footer from '../components/layout/Footer';
 import ContactForm from '../components/common/ContactForm';
-import { Facebook, Instagram, Twitter, Phone, MapPin, UtensilsCrossed, MessageSquare } from 'lucide-react';
+import { Facebook, Instagram, Phone, MapPin, UtensilsCrossed, MessageSquare } from 'lucide-react';
+import TikTokIcon from '../components/common/TikTokIcon';
 import { Button } from '../components/common/Button';
 import useTranslation from '../hooks/useTranslation';
 import { useSettingsStore } from '../store';
@@ -27,6 +30,12 @@ export default function Landing() {
 
     return (
         <div className="min-h-screen bg-[#FDFBF7] font-sans">
+            {/* SEO Helmet */}
+            <Helmet>
+                <title>{settings?.brand_name_ar || 'توريقة'} - {settings?.page_title_home_ar || 'الرئيسية'}</title>
+                <meta name="description" content={settings?.meta_description_ar || settings?.hero_subtitle_ar} />
+                {settings?.og_image_url && <meta property="og:image" content={settings.og_image_url} />}
+            </Helmet>
 
             {/* --- Navbar (Simple Overlay) --- */}
             {/* --- Navbar (Reusable) --- */}
@@ -203,9 +212,9 @@ export default function Landing() {
                             <h3 className="font-bold text-xl mb-2">{t('contact.social_title')}</h3>
                             <p className="text-gray-400 text-sm mb-6">{t('contact.social_subtitle')}</p>
                             <div className="flex gap-4">
-                                <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Facebook className="w-5 h-5" /></a>
-                                <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Instagram className="w-5 h-5" /></a>
-                                <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Twitter className="w-5 h-5" /></a>
+                                <a href={settings?.facebook_link || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Facebook className="w-5 h-5" /></a>
+                                <a href={settings?.instagram_link || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><Instagram className="w-5 h-5" /></a>
+                                <a href={settings?.tiktok_link || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all"><TikTokIcon className="w-5 h-5" /></a>
                             </div>
                         </div>
 
@@ -227,22 +236,7 @@ export default function Landing() {
             </section>
 
             {/* --- Footer --- */}
-            <footer className="bg-[#111] text-white py-12 px-6">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="text-center md:text-start">
-                        <img
-                            src={settings?.brand_logo || '/assets/images/logo.avif'}
-                            alt="Logo" className="h-12 w-auto object-contain mb-4 mx-auto md:mx-0 opacity-80"
-                        />
-                        <p className="text-gray-500 text-sm">© 2026 Tawriqa. All rights reserved.</p>
-                    </div>
-                    <div className="flex gap-8 text-sm text-gray-400">
-                        <a href="#" className="hover:text-white transition-colors">عن توريقة</a>
-                        <a href="#" className="hover:text-white transition-colors">الشروط والأحكام</a>
-                        <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
 
         </div>
     );

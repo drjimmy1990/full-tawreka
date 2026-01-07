@@ -97,6 +97,14 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'رجوع',
         'common.currency': 'ج.م',
         'common.minutes': 'دقيقة',
+
+        // Footer
+        'footer.quick_links': 'روابط سريعة',
+        'footer.contact': 'تواصل معنا',
+        'footer.follow_us': 'تابعنا',
+        'footer.terms': 'الشروط والأحكام',
+        'footer.privacy': 'سياسة الخصوصية',
+        'footer.about': 'عن توريقة',
     },
     en: {
         // Landing
@@ -193,6 +201,14 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'Back',
         'common.currency': 'EGP',
         'common.minutes': 'min',
+
+        // Footer
+        'footer.quick_links': 'Quick Links',
+        'footer.contact': 'Contact Us',
+        'footer.follow_us': 'Follow Us',
+        'footer.terms': 'Terms & Conditions',
+        'footer.privacy': 'Privacy Policy',
+        'footer.about': 'About Us',
     },
     ru: {
         // Landing

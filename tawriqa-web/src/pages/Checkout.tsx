@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ArrowRight, MapPin, User, Phone, CheckCircle, ArrowLeft } from 'lucide-react';
 import useTranslation from '../hooks/useTranslation';
 import { useCartStore, useLocationStore } from '../store';
@@ -90,6 +91,11 @@ export default function Checkout() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
+            {/* SEO Helmet */}
+            <Helmet>
+                <title>{t('checkout.title') || 'إتمام الطلب'}</title>
+            </Helmet>
+
             {/* Header */}
             <header className="sticky top-0 z-30 bg-white shadow-sm px-4 py-4 flex items-center gap-4">
                 <button onClick={() => navigate('/menu')} className="p-2 hover:bg-gray-100 rounded-full">
