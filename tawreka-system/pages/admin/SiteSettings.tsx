@@ -403,6 +403,77 @@ const SiteSettings: React.FC = () => {
                 )}
             </Section>
 
+            {/* ABOUT PAGE */}
+            <Section title={language === 'ar' ? 'صفحة من نحن' : 'About Page'} icon={Globe}>
+                {/* Hero Image */}
+                {renderInput(language === 'ar' ? 'صورة الغلاف' : 'Hero Image', 'about_hero_image', 'image', true)}
+
+                {/* Story Section */}
+                <div className="md:col-span-2 border-t pt-4 mt-2">
+                    <h4 className="font-bold text-sm mb-3 text-gray-700">
+                        {language === 'ar' ? '📖 القصة وما فيها' : '📖 Story Section'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderInput(language === 'ar' ? 'صورة القصة' : 'Story Image', 'about_story_image', 'image')}
+                        {isLangEnabled('ar') && renderInput('عنوان القصة (عربي)', 'about_story_title_ar')}
+                        {isLangEnabled('en') && renderInput('Story Title (English)', 'about_story_title_en')}
+                        {isLangEnabled('ru') && renderInput('Заголовок (Русский)', 'about_story_title_other')}
+                        {isLangEnabled('ar') && renderInput('نص القصة (عربي)', 'about_story_text_ar', 'text', true)}
+                        {isLangEnabled('en') && renderInput('Story Text (English)', 'about_story_text_en', 'text', true)}
+                        {isLangEnabled('ru') && renderInput('Текст (Русский)', 'about_story_text_other', 'text', true)}
+                    </div>
+                </div>
+
+                {/* Vision Section */}
+                <div className="md:col-span-2 border-t pt-4 mt-2">
+                    <h4 className="font-bold text-sm mb-3 text-gray-700">
+                        {language === 'ar' ? '👁️ رؤيتنا' : '👁️ Vision Section'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderInput(language === 'ar' ? 'صورة الرؤية' : 'Vision Image', 'about_vision_image', 'image')}
+                        {isLangEnabled('ar') && renderInput('عنوان الرؤية (عربي)', 'about_vision_title_ar')}
+                        {isLangEnabled('en') && renderInput('Vision Title (English)', 'about_vision_title_en')}
+                        {isLangEnabled('ru') && renderInput('Заголовок (Русский)', 'about_vision_title_other')}
+                        {isLangEnabled('ar') && renderInput('نص الرؤية (عربي)', 'about_vision_text_ar', 'text', true)}
+                        {isLangEnabled('en') && renderInput('Vision Text (English)', 'about_vision_text_en', 'text', true)}
+                        {isLangEnabled('ru') && renderInput('Текст (Русский)', 'about_vision_text_other', 'text', true)}
+                    </div>
+                </div>
+
+                {/* Values Section */}
+                <div className="md:col-span-2 border-t pt-4 mt-2">
+                    <h4 className="font-bold text-sm mb-3 text-gray-700">
+                        {language === 'ar' ? '💎 قيمنا' : '💎 Values Section'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderInput(language === 'ar' ? 'صورة القيم' : 'Values Image', 'about_values_image', 'image')}
+                        {isLangEnabled('ar') && renderInput('عنوان القيم (عربي)', 'about_values_title_ar')}
+                        {isLangEnabled('en') && renderInput('Values Title (English)', 'about_values_title_en')}
+                        {isLangEnabled('ru') && renderInput('Заголовок (Русский)', 'about_values_title_other')}
+                        {isLangEnabled('ar') && renderInput('نص القيم (عربي)', 'about_values_text_ar', 'text', true)}
+                        {isLangEnabled('en') && renderInput('Values Text (English)', 'about_values_text_en', 'text', true)}
+                        {isLangEnabled('ru') && renderInput('Текст (Русский)', 'about_values_text_other', 'text', true)}
+                    </div>
+                </div>
+
+                {/* Products Section Title */}
+                <div className="md:col-span-2 border-t pt-4 mt-2">
+                    <h4 className="font-bold text-sm mb-3 text-gray-700">
+                        {language === 'ar' ? '🍕 قسم المنتجات' : '🍕 Products Gallery'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {isLangEnabled('ar') && renderInput('عنوان (عربي)', 'about_products_title_ar')}
+                        {isLangEnabled('en') && renderInput('Title (English)', 'about_products_title_en')}
+                        {isLangEnabled('ru') && renderInput('Заголовок (Русский)', 'about_products_title_other')}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                        {language === 'ar'
+                            ? '* لإدارة صور المنتجات، اذهب إلى قسم "معرض الصور" في القائمة الجانبية'
+                            : '* To manage product images, go to "Gallery Manager" in sidebar'}
+                    </p>
+                </div>
+            </Section>
+
             {/* LEGAL */}
             <Section title={language === 'ar' ? 'الصفحات القانونية' : 'Legal Pages'} icon={Globe}>
                 {renderInput(language === 'ar' ? 'رابط الشروط والأحكام' : 'Terms & Conditions URL', 'terms_url')}

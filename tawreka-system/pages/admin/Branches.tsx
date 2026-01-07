@@ -182,7 +182,7 @@ const Branches: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">System Name</label>
                 <input type="text" value={editingBranch.name} onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })} className="w-full border rounded-lg px-3 py-2" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name (Arabic)</label>
                   <input type="text" value={(editingBranch as any).name_ar || ''} onChange={(e) => setEditingBranch({ ...editingBranch, name_ar: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="القاهرة - المعادي" />
@@ -191,8 +191,12 @@ const Branches: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name (English)</label>
                   <input type="text" value={(editingBranch as any).name_en || ''} onChange={(e) => setEditingBranch({ ...editingBranch, name_en: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="Cairo - Maadi" />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name (Russian)</label>
+                  <input type="text" value={(editingBranch as any).name_ru || ''} onChange={(e) => setEditingBranch({ ...editingBranch, name_ru: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="Каир - Маади" />
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address (Arabic)</label>
                   <input type="text" value={(editingBranch as any).address_ar || ''} onChange={(e) => setEditingBranch({ ...editingBranch, address_ar: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="المعادي بارك مول" />
@@ -200,6 +204,10 @@ const Branches: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address (English)</label>
                   <input type="text" value={(editingBranch as any).address_en || ''} onChange={(e) => setEditingBranch({ ...editingBranch, address_en: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="Maadi Park Mall" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address (Russian)</label>
+                  <input type="text" value={(editingBranch as any).address_ru || ''} onChange={(e) => setEditingBranch({ ...editingBranch, address_ru: e.target.value } as any)} className="w-full border rounded-lg px-3 py-2" placeholder="Маади Парк Молл" />
                 </div>
               </div>
               <div>

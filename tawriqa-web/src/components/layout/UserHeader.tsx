@@ -33,7 +33,6 @@ export default function UserHeader({ variant = 'default' }: UserHeaderProps) {
     const navItems = [
         {
             key: 'home', action: () => {
-                // Only scroll on landing page, navigate home from all other pages
                 if (window.location.pathname === '/') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
@@ -42,7 +41,8 @@ export default function UserHeader({ variant = 'default' }: UserHeaderProps) {
             }
         },
         { key: 'menu', action: () => navigate('/location?redirect=menu') },
-        { key: 'about', action: () => scrollTo('story') },
+        { key: 'branches', action: () => navigate('/branches') },
+        { key: 'about', action: () => navigate('/about') },
         { key: 'contact_us', action: () => scrollTo('contact') }
     ];
 

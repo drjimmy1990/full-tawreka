@@ -8,6 +8,7 @@ import Orders from './pages/admin/Orders';
 import MenuBuilder from './pages/admin/MenuBuilder';
 import BranchPriceManager from './pages/admin/BranchPriceManager';
 import SiteSettings from './pages/admin/SiteSettings';
+import GalleryManager from './pages/admin/GalleryManager';
 import Layout from './components/Layout';
 import { User } from './types';
 import { I18nProvider } from './i18n';
@@ -91,6 +92,8 @@ const AppContent: React.FC = () => {
         return user.role === 'super_admin' ? <BranchPriceManager /> : <div>Access Denied</div>;
       case 'admin_settings':
         return user.role === 'super_admin' ? <SiteSettings /> : <div>Access Denied</div>;
+      case 'admin_gallery':
+        return user.role === 'super_admin' ? <GalleryManager /> : <div>Access Denied</div>;
       default:
         return user.role === 'branch_manager' ? <Dashboard user={user} onConnectionStatusChange={setConnectionStatus} /> : <Analytics />;
     }

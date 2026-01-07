@@ -9,6 +9,8 @@ import Landing from './pages/Landing';
 import Menu from './pages/Menu';
 import Checkout from './pages/Checkout';
 import LocationSelection from './pages/LocationSelection';
+import Branches from './pages/Branches';
+import About from './pages/About';
 
 function App() {
     const { setSettings, getLocalizedSetting, getSetting } = useSettingsStore();
@@ -85,6 +87,10 @@ function App() {
                     {/* Menu - Allow access even without branch for testing */}
                     <Route path="/location" element={<LocationSelection />} />
                     <Route path="/menu" element={<Menu />} />
+
+                    {/* New Pages */}
+                    <Route path="/branches" element={<Branches />} />
+                    <Route path="/about" element={<About />} />
 
                     {/* Checkout */}
                     <Route path="/checkout" element={<Checkout />} />

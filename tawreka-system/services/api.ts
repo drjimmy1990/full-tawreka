@@ -195,6 +195,7 @@ export const api = {
           name: branch.name,
           name_ar: (branch as any).name_ar,
           name_en: (branch as any).name_en,
+          name_ru: (branch as any).name_ru,
           phone_contact: branch.phone_contact,
           zones: branch.zones,
           is_active: branch.is_active,
@@ -202,6 +203,7 @@ export const api = {
           closing_time: (branch as any).closing_time,
           address_ar: (branch as any).address_ar,
           address_en: (branch as any).address_en,
+          address_ru: (branch as any).address_ru,
           google_maps_embed: (branch as any).google_maps_embed,
           google_maps_link: (branch as any).google_maps_link,
         })
@@ -619,5 +621,40 @@ export const api = {
         .insert(links);
       if (insertError) throw insertError;
     }
+  },
+
+  // ----------------------------------------------------
+  // ABOUT PAGE GALLERY
+  // ----------------------------------------------------
+  getAboutGallery: async () => {
+    const { data, error } = await supabase
+      .from('about_gallery')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
+  addGalleryImage: async (imageUrl: string, altText: string, sortOrder: number) => {
+    const { error } = await supabase
+      .from('about_gallery')
+      .insert({ image_url: imageUrl, alt_text: altText, sort_order: sortOrder, is_active: true });
+    if (error) throw error;
+  },
+
+  updateGalleryImage: async (id: number, updates: { alt_text?: string; sort_order?: number; is_active?: boolean }) => {
+    const { error } = await supabase
+      .from('about_gallery')
+      .update(updates)
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  deleteGalleryImage: async (id: number) => {
+    const { error } = await supabase
+      .from('about_gallery')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
   }
 };

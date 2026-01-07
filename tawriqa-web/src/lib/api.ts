@@ -160,6 +160,20 @@ export const api = {
         const { data } = await apiClient.post('/orders', orderData);
         return data;
     },
+
+    // ==========================================
+    // ABOUT PAGE GALLERY
+    // ==========================================
+    getAboutGallery: async (): Promise<Array<{ id: number; image_url: string; alt_text?: string; sort_order: number }>> => {
+        try {
+            if (!SUPABASE_URL) return [];
+            const { data } = await supabaseClient.get('/about_gallery?is_active=eq.true&order=sort_order.asc');
+            return data || [];
+        } catch (e) {
+            console.error('Failed to fetch gallery:', e);
+            return [];
+        }
+    },
 };
 
 // Default settings when API fails

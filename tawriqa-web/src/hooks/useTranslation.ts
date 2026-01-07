@@ -22,8 +22,12 @@ const translations: Record<string, Record<string, string>> = {
         'landing.contact_title': 'تواصلك معانا بيسعدنا',
         'landing.home': 'الرئيسية',
         'landing.menu': 'المنيو',
-        'landing.about': 'عن توريقة',
+        'landing.branches': 'فروعنا',
+        'landing.about': 'من نحن',
         'landing.contact_us': 'اتصل بنا',
+        'header.branches': 'فروعنا',
+        'header.about': 'من نحن',
+        'about.order_now': 'اطلب الأن',
 
         // Location
         'location.select_branch': 'اختر الفرع',
@@ -138,8 +142,12 @@ const translations: Record<string, Record<string, string>> = {
         'landing.contact_title': 'We\'d love to hear from you',
         'landing.home': 'Home',
         'landing.menu': 'Menu',
-        'landing.about': 'About Tawriqa',
+        'landing.branches': 'Branches',
+        'landing.about': 'About Us',
         'landing.contact_us': 'Contact Us',
+        'header.branches': 'Branches',
+        'header.about': 'About Us',
+        'about.order_now': 'Order Now',
 
         // Location
         'location.select_branch': 'Select Branch',

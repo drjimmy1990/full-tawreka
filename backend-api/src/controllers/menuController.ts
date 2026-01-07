@@ -25,7 +25,7 @@ export const getBranches = async (req: Request, res: Response) => {
     try {
         const { data, error } = await supabase
             .from('branches')
-            .select('id, name, phone_contact, zones, opening_time, closing_time')
+            .select('id, name, name_ar, name_en, name_ru, phone_contact, zones, opening_time, closing_time, address_ar, address_en, address_ru, google_maps_embed, google_maps_link, is_active')
             .eq('is_active', true);
 
         if (error) throw error;

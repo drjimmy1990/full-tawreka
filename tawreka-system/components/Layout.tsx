@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { User } from '../types';
 import { useI18n } from '../i18n';
-import { LayoutDashboard, LogOut, UtensilsCrossed, BarChart3, Store, History, Globe, Database, ChevronLeft, ChevronRight, ClipboardList, Utensils, DollarSign, Settings } from 'lucide-react';
+import { LayoutDashboard, LogOut, UtensilsCrossed, BarChart3, Store, History, Globe, Database, ChevronLeft, ChevronRight, ClipboardList, Utensils, DollarSign, Settings, Image } from 'lucide-react';
 import { api } from '../services/api';
 
 interface LayoutProps {
@@ -88,6 +88,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, activePage, o
                 <NavItem page="admin_menu" icon={Utensils} label={t('nav.menu_builder')} />
                 <NavItem page="admin_prices" icon={DollarSign} label={t('nav.branch_prices')} />
                 <NavItem page="admin_settings" icon={Settings} label={t('nav.site_settings')} />
+                <NavItem page="admin_gallery" icon={Image} label={language === 'ar' ? 'معرض الصور' : 'Gallery'} />
                 <NavItem page="admin_orders" icon={History} label={t('nav.orders')} />
               </>
             )}
@@ -136,6 +137,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, activePage, o
             {activePage === 'admin_menu' && t('nav.menu_builder')}
             {activePage === 'admin_prices' && t('nav.branch_prices')}
             {activePage === 'admin_settings' && t('nav.site_settings')}
+            {activePage === 'admin_gallery' && (language === 'ar' ? 'معرض الصور' : 'Gallery')}
             {activePage === 'admin_orders' && t('nav.orders')}
           </h2>
           <div className="flex items-center gap-3">
