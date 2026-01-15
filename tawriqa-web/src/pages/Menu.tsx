@@ -111,7 +111,7 @@ export default function Menu() {
                         <div className="flex-1">
                             <h1 className="font-bold text-lg text-gray-900">{settings?.brand_name_ar || 'توريقة'}</h1>
                             <p className="text-xs text-gray-500">
-                                {branch?.name && <span className="text-primary font-bold">{branch.name} • </span>}
+                                {branch && <span className="text-primary font-bold">{lang === 'ar' ? (branch as any).name_ar : lang === 'en' ? (branch as any).name_en : (branch as any).name_ru || branch.name} • </span>}
                                 {serviceType === 'delivery' ? t('landing.delivery') : t('landing.pickup')} • 35-45 {t('common.minutes')}
                             </p>
                         </div>

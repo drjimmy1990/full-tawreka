@@ -107,18 +107,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
           filter: `branch_id=eq.${user.branch_id}`
         },
         (payload) => {
-          // LOGIC: Play sound ONLY if meaningful change
+          // LOGIC: Play sound ONLY if order will be VISIBLE in kitchen
           let shouldPlaySound = false;
 
+          console.log('🔔 Realtime event:', payload.eventType, (payload.new as any)?.id, (payload.new as any)?.payment_status);
+
           if (payload.eventType === 'INSERT') {
-            // New Order -> Ding!
-            shouldPlaySound = true;
+            // Only alert for CASH orders (they appear immediately)
+            // Card orders wait for payment confirmation
+            const paymentMethod = payload.new?.payment_method;
+            if (paymentMethod === 'cash') {
+              shouldPlaySound = true;
+              console.log('✅ Cash order - playing sound');
+            }
           }
           else if (payload.eventType === 'UPDATE') {
-            const oldPending = payload.old.modification_pending;
-            const newPending = payload.new.modification_pending;
-            const oldStatus = payload.old.status;
-            const newStatus = payload.new.status;
+            const newPaymentStatus = payload.new?.payment_status;
+            const newPaymentMethod = payload.new?.payment_method;
+            const oldPaymentStatus = payload.old?.payment_status;
+            const oldPending = payload.old?.modification_pending;
+            const newPending = payload.new?.modification_pending;
+            const oldStatus = payload.old?.status;
+            const newStatus = payload.new?.status;
+
+            console.log('📋 UPDATE details:', { newPaymentStatus, newPaymentMethod, oldPaymentStatus });
+
+            // Payment just confirmed - order now visible!
+            // Alert when: status changes to 'paid' (and it wasn't 'paid' before)
+            if (newPaymentStatus === 'paid' && oldPaymentStatus !== 'paid') {
+              shouldPlaySound = true;
+              console.log('✅ Payment confirmed - playing sound');
+            }
 
             // NEW modification request arrived
             if (!oldPending && newPending) {
@@ -178,14 +197,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
             filter: `branch_id=eq.${user.branch_id}`
           },
           (payload) => {
+            // LOGIC: Play sound ONLY if order will be VISIBLE in kitchen
             let shouldPlaySound = false;
             if (payload.eventType === 'INSERT') {
-              shouldPlaySound = true;
+              // Only alert for CASH orders
+              const paymentMethod = payload.new?.payment_method;
+              if (paymentMethod === 'cash') {
+                shouldPlaySound = true;
+              }
             } else if (payload.eventType === 'UPDATE') {
-              const oldPending = payload.old.modification_pending;
-              const newPending = payload.new.modification_pending;
-              const oldStatus = payload.old.status;
-              const newStatus = payload.new.status;
+              const newPaymentStatus = payload.new?.payment_status;
+              const newPaymentMethod = payload.new?.payment_method;
+              const oldPaymentStatus = payload.old?.payment_status;
+              const oldPending = payload.old?.modification_pending;
+              const newPending = payload.new?.modification_pending;
+              const oldStatus = payload.old?.status;
+              const newStatus = payload.new?.status;
+
+              // Payment just confirmed
+              if (newPaymentStatus === 'paid' && oldPaymentStatus !== 'paid') {
+                shouldPlaySound = true;
+              }
               if (!oldPending && newPending) {
                 shouldPlaySound = true;
               }

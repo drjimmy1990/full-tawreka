@@ -67,7 +67,12 @@ export default function Checkout() {
                 customer_name: formData.name,
                 customer_phone: formData.phone,
                 customer_address: serviceType === 'delivery'
-                    ? `${deliveryAddress || formData.address}, Floor: ${formData.floor}, Apt: ${formData.apartment}`
+                    ? [
+                        formData.address,           // Typed street details
+                        deliveryAddress,            // Map-picked location (city/area)
+                        formData.floor ? `Floor: ${formData.floor}` : null,
+                        formData.apartment ? `Apt: ${formData.apartment}` : null
+                    ].filter(Boolean).join(', ')
                     : formData.address || 'Pickup',
                 delivery_lat: deliveryLat || undefined,
                 delivery_lng: deliveryLng || undefined,

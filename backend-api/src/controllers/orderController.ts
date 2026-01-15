@@ -140,14 +140,64 @@ export const createCustomerOrder = async (req: Request, res: Response) => {
             }
         }
 
-        // 4. Calculate Subtotal
-        const subtotal = items.reduce((sum: number, item: any) => {
-            const itemPrice = item.unit_price || item.price || 0;
-            const itemQty = item.quantity || item.qty || 1;
-            return sum + (itemPrice * itemQty);
+        // 4. Transform items from website format to kitchen format
+        // Website sends: { item_id, quantity, unit_price, options, notes }
+        // Kitchen expects: { qty, name, price, size, notes }
+        const transformedItems = await Promise.all(items.map(async (item: any) => {
+            // If already in kitchen format (has 'name' and 'qty'), use as-is
+            if (item.name && (item.qty !== undefined)) {
+                return item;
+            }
+
+            // Fetch item name from database
+            let itemName = 'Item';
+            if (item.item_id) {
+                const { data: menuItem } = await supabase
+                    .from('menu_items')
+                    .select('name_ar, name_en')
+                    .eq('id', item.item_id)
+                    .single();
+
+                if (menuItem) {
+                    itemName = menuItem.name_ar || menuItem.name_en || 'Item';
+                }
+            }
+
+            // Calculate total price including options
+            const basePrice = item.unit_price || item.price || 0;
+            const optionsPrice = item.options?.reduce((sum: number, opt: any) => sum + (opt.price || 0), 0) || 0;
+            const totalPrice = basePrice + optionsPrice;
+
+            // Extract size from options (groupId 4 is typically size)
+            const sizeOption = item.options?.find((opt: any) => opt.groupId === 4);
+            const size = sizeOption?.name || null;
+
+            return {
+                qty: item.quantity || item.qty || 1,
+                name: itemName,
+                price: totalPrice,
+                size: size,
+                notes: item.notes || null,
+                // Keep original data for reference
+                item_id: item.item_id,
+                options: item.options
+            };
+        }));
+
+        // 5. Calculate Subtotal using transformed items
+        const subtotal = transformedItems.reduce((sum: number, item: any) => {
+            return sum + ((item.price || 0) * (item.qty || 1));
         }, 0);
 
-        // 5. Insert Order
+        // 5b. Collect all item notes into kitchen_notes
+        const itemNotes = transformedItems
+            .filter((item: any) => item.notes && item.notes.trim())
+            .map((item: any) => `${item.name}: ${item.notes}`)
+            .join(' | ');
+
+        const allKitchenNotes = [notes, itemNotes].filter(Boolean).join(' | ');
+
+        // 6. Insert Order with transformed items
         const { data: order, error: orderError } = await supabase
             .from('orders')
             .insert({
@@ -158,8 +208,8 @@ export const createCustomerOrder = async (req: Request, res: Response) => {
                 delivery_lat: delivery_lat,
                 delivery_lng: delivery_lng,
                 service_type: service_type || 'pickup',
-                items: items,
-                kitchen_notes: notes,
+                items: transformedItems,
+                kitchen_notes: allKitchenNotes || null,
                 subtotal: subtotal,
                 delivery_fee: deliveryFee,
                 total: subtotal + deliveryFee,

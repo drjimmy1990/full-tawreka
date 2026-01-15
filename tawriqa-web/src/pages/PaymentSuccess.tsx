@@ -15,18 +15,28 @@ export default function PaymentSuccess() {
     }>({});
 
     useEffect(() => {
+        // Check if payment actually failed - Paymob sends all results to one URL
+        const successParam = searchParams.get('success');
+        const txnCode = searchParams.get('txn_response_code');
+
+        // If success=false or declined, redirect to failed page
+        if (successParam === 'false' || txnCode === 'DECLINED') {
+            navigate('/checkout/failed?' + searchParams.toString(), { replace: true });
+            return;
+        }
+
         // Extract payment details from URL params (sent by Paymob redirect)
         const details = {
             orderId: searchParams.get('merchant_order_id') || searchParams.get('order') || '',
             transactionId: searchParams.get('id') || searchParams.get('transaction_id') || '',
             amount: searchParams.get('amount_cents') || '',
-            success: searchParams.get('success') === 'true' || searchParams.get('txn_response_code') === 'APPROVED'
+            success: successParam === 'true' || txnCode === 'APPROVED'
         };
         setPaymentDetails(details);
 
         // Log for debugging (you can remove this in production)
         console.log('Payment Success - URL Params:', Object.fromEntries(searchParams.entries()));
-    }, [searchParams]);
+    }, [searchParams, navigate]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-6" dir="rtl">

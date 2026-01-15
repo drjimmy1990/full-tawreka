@@ -118,12 +118,28 @@ export default function DeliveryMap({ onLocationSelect }: DeliveryMapProps) {
                 },
                 (err) => {
                     console.error("Geolocation error:", err);
-                    alert(t('location.not_covered')); // Reuse fallback msg
+                    // Show appropriate error message based on error code
+                    let errorMsg = '';
+                    switch (err.code) {
+                        case 1: // PERMISSION_DENIED
+                            errorMsg = 'يرجى السماح بالوصول للموقع من إعدادات المتصفح';
+                            break;
+                        case 2: // POSITION_UNAVAILABLE
+                            errorMsg = 'تعذر تحديد موقعك. يرجى المحاولة مرة أخرى';
+                            break;
+                        case 3: // TIMEOUT
+                            errorMsg = 'انتهت مهلة تحديد الموقع. يرجى المحاولة مرة أخرى';
+                            break;
+                        default:
+                            errorMsg = 'تعذر تحديد موقعك. يرجى تحديده يدوياً على الخريطة';
+                    }
+                    alert(errorMsg);
                     setIsLoadingLocation(false);
-                }
+                },
+                { timeout: 30000, enableHighAccuracy: false, maximumAge: 60000 }
             );
         } else {
-            alert("Geolocation is not supported by this browser.");
+            alert("متصفحك لا يدعم تحديد الموقع");
             setIsLoadingLocation(false);
         }
     };

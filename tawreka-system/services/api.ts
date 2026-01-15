@@ -53,6 +53,11 @@ export const api = {
       query = query.eq('branch_id', branchId);
     }
 
+    // IMPORTANT: Only show orders that are ready for kitchen
+    // - Cash orders: show immediately (payment at delivery)
+    // - Card orders: only show after payment confirmed (payment_status = 'paid')
+    query = query.or('payment_method.eq.cash,payment_status.eq.paid');
+
     const { data, error } = await query;
 
     if (error) {
