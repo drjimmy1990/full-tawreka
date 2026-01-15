@@ -25,15 +25,22 @@ api.tawreka.com      → Backend API (backend-api)
 ### 1. Install Required aaPanel Software
 In aaPanel → App Store, install:
 - ✅ **Nginx** (Latest)
-- ✅ **Node.js Manager** (for backend-api)
-- ✅ **PM2 Manager** (optional, for process management)
 
 ### 2. SSH Access
 You need SSH access to upload files and run commands.
 
-### 3. Git (Optional but recommended)
+### 3. Install Node.js (Required)
+Use the `n` Node version manager (tested and working):
 ```bash
-apt update && apt install git -y
+# Download and install n and Node.js
+curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash
+
+# Reload shell
+source ~/.bashrc
+
+# Verify installation
+node -v  # Should print v24.x.x or similar
+npm -v   # Should print 11.x.x or similar
 ```
 
 ---
@@ -93,27 +100,45 @@ ALLOWED_ORIGINS=https://tawreka.com,https://kitchen.tawreka.com
 API_KEY=YOUR_SECURE_API_KEY
 ```
 
-### Step 5: Build TypeScript (if needed)
+### Step 5: Build TypeScript
 ```bash
 npm run build
 ```
 
-### Step 6: Create PM2 Process
-Using aaPanel Node.js Manager:
-1. Go to **aaPanel → Node.js Manager → Add Node Project**
-2. Configure:
-   - **Project Name**: `tawreka-api`
-   - **Project Directory**: `/www/wwwroot/api.tawreka.com`
-   - **Startup File**: `dist/index.js` (or `src/index.ts` with ts-node)
-   - **Node Version**: 18.x or 20.x
-   - **Port**: 4001
-
-Or manually with PM2:
+### Step 6: Start with PM2 (Process Manager)
+Use `npx` to run PM2 (avoids global path issues):
 ```bash
-cd /www/wwwroot/api.tawreka.com
-pm2 start dist/index.js --name "tawreka-api"
-pm2 save
-pm2 startup
+# Start the API
+npx pm2 start dist/index.js --name "tawreka-api"
+
+# Save process list for auto-restart
+npx pm2 save
+
+# Configure PM2 to start on server reboot
+npx pm2 startup
+```
+
+> **Note**: After running `pm2 startup`, copy and run the command it outputs to enable auto-start.
+
+### PM2 Management Commands
+```bash
+# Check status
+npx pm2 status
+
+# View logs
+npx pm2 logs tawreka-api
+
+# Restart the API
+npx pm2 restart tawreka-api
+
+# Stop the API
+npx pm2 stop tawreka-api
+
+# Delete from PM2 (stops and removes)
+npx pm2 delete tawreka-api
+
+# Monitor in real-time
+npx pm2 monit
 ```
 
 ### Step 7: Create Website in aaPanel for API
@@ -282,10 +307,10 @@ ALLOWED_ORIGINS=https://tawreka.com,https://www.tawreka.com,https://kitchen.tawr
 ### Update Backend API
 ```bash
 cd /www/wwwroot/api.tawreka.com
-git pull origin main  # or upload new files
+# Upload new files or git pull
 npm install
 npm run build
-pm2 restart tawreka-api
+npx pm2 restart tawreka-api
 ```
 
 ### Update Frontend Sites
@@ -300,13 +325,20 @@ pm2 restart tawreka-api
 ### Backend API Not Starting
 ```bash
 # Check logs
-pm2 logs tawreka-api
+npx pm2 logs tawreka-api
 
 # Check if port is in use
 netstat -tlnp | grep 4001
 
 # Restart
-pm2 restart tawreka-api
+npx pm2 restart tawreka-api
+
+# Stop the API
+npx pm2 stop tawreka-api
+
+# Delete and recreate
+npx pm2 delete tawreka-api
+npx pm2 start dist/index.js --name "tawreka-api"
 ```
 
 ### 502 Bad Gateway
@@ -329,18 +361,18 @@ pm2 restart tawreka-api
 
 ---
 
-## 📊 Monitoring
+## 📊 Monitoring & Management
 
 ### Check Application Status
 ```bash
-pm2 status
-pm2 monit
+npx pm2 status
+npx pm2 monit
 ```
 
 ### View Logs
 ```bash
 # Backend API logs
-pm2 logs tawreka-api
+npx pm2 logs tawreka-api
 
 # Nginx access logs
 tail -f /www/wwwlogs/api.tawreka.com.log
@@ -350,7 +382,10 @@ tail -f /www/wwwlogs/tawreka.com.log
 ### Restart Services
 ```bash
 # Restart Node app
-pm2 restart tawreka-api
+npx pm2 restart tawreka-api
+
+# Stop Node app
+npx pm2 stop tawreka-api
 
 # Restart Nginx
 nginx -s reload
