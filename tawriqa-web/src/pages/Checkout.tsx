@@ -35,12 +35,42 @@ export default function Checkout() {
         floor: '',
         apartment: ''
     });
+    const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(availablePaymentMethods[0]);
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [orderId, setOrderId] = useState<number | null>(null);
     const [showPaymentIframe, setShowPaymentIframe] = useState(false);
     const [iframeUrl, setIframeUrl] = useState('');
+
+    // Validation functions
+    const validatePhone = (phone: string) => {
+        // Egyptian phone: 01XXXXXXXXX (11 digits starting with 01)
+        const cleaned = phone.replace(/\D/g, '');
+        if (!cleaned) return t('validation.phone_required');
+        if (cleaned.length !== 11) return t('validation.phone_length');
+        if (!cleaned.startsWith('01')) return t('validation.phone_format');
+        return null;
+    };
+
+    const validateName = (name: string) => {
+        if (!name.trim()) return t('validation.name_required');
+        if (name.trim().length < 3) return t('validation.name_min');
+        return null;
+    };
+
+    const validateForm = () => {
+        const newErrors: typeof errors = {};
+        const nameError = validateName(formData.name);
+        const phoneError = validatePhone(formData.phone);
+        if (nameError) newErrors.name = nameError;
+        if (phoneError) newErrors.phone = phoneError;
+        if (serviceType === 'delivery' && !formData.address.trim()) {
+            newErrors.address = t('validation.address_required');
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     // Update default payment method when available methods change
     useEffect(() => {
@@ -58,6 +88,7 @@ export default function Checkout() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!branch) return;
+        if (!validateForm()) return;
         setSubmitting(true);
 
         try {
@@ -123,7 +154,7 @@ export default function Checkout() {
                         }
                     } catch (paymentError) {
                         console.error('Payment initiation failed:', paymentError);
-                        alert('فشل في بدء عملية الدفع. يرجى المحاولة مرة أخرى.');
+                        alert(lang === 'ar' ? 'فشل في بدء عملية الدفع. يرجى المحاولة مرة أخرى.' : lang === 'en' ? 'Failed to initiate payment. Please try again.' : 'Не удалось начать оплату. Попробуйте еще раз.');
                     }
                 } else {
                     setSuccess(true);
@@ -142,7 +173,7 @@ export default function Checkout() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-primary/5 to-gray-50 flex flex-col">
                 <Helmet>
-                    <title>الدفع الإلكتروني - {brandName}</title>
+                    <title>{t('checkout.secure_payment')} - {brandName}</title>
                 </Helmet>
 
                 <header className="bg-white shadow-sm px-4 py-4 flex items-center gap-4">
@@ -153,8 +184,8 @@ export default function Checkout() {
                         <Arrow className="w-5 h-5 text-gray-600" />
                     </button>
                     <div className="flex-1">
-                        <h1 className="font-bold text-gray-800 text-lg">الدفع الآمن</h1>
-                        <p className="text-xs text-gray-400">طلب #{orderId}</p>
+                        <h1 className="font-bold text-gray-800 text-lg">{t('checkout.secure_payment')}</h1>
+                        <p className="text-xs text-gray-400">{t('checkout.order_number')} #{orderId}</p>
                     </div>
                     <img src="/assets/images/logo.avif" alt={brandName} className="h-10 w-10 rounded-full object-cover" />
                 </header>
@@ -185,7 +216,7 @@ export default function Checkout() {
                     </p>
                     {paymentMethod === 'cash' && (
                         <div className="bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg text-sm mb-6">
-                            💵 الدفع عند الاستلام
+                            {t('checkout.cash_note')}
                         </div>
                     )}
                     <Button onClick={() => navigate('/')} className="w-full">
@@ -254,17 +285,17 @@ export default function Checkout() {
                     {/* Totals */}
                     <div className="border-t border-dashed border-gray-200 pt-4 space-y-2">
                         <div className="flex justify-between text-sm text-gray-500">
-                            <span>المجموع الفرعي</span>
+                            <span>{t('checkout.subtotal')}</span>
                             <span>{subtotal} {t('common.currency')}</span>
                         </div>
                         {serviceType === 'delivery' && (
                             <div className="flex justify-between text-sm text-gray-500">
-                                <span>رسوم التوصيل</span>
+                                <span>{t('checkout.delivery_fee')}</span>
                                 <span>{deliveryFee} {t('common.currency')}</span>
                             </div>
                         )}
                         <div className="flex justify-between font-bold text-lg text-primary pt-2 border-t border-gray-100">
-                            <span>الإجمالي</span>
+                            <span>{t('checkout.total')}</span>
                             <span>{total} {t('common.currency')}</span>
                         </div>
                     </div>
@@ -278,34 +309,46 @@ export default function Checkout() {
                                 <User className="w-5 h-5 text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-800">بيانات التواصل</h3>
-                                <p className="text-xs text-gray-400">معلومات الاستلام</p>
+                                <h3 className="font-bold text-gray-800">{t('checkout.contact_info')}</h3>
+                                <p className="text-xs text-gray-400">{t('checkout.contact_subtitle')}</p>
                             </div>
                         </div>
 
                         <div className="space-y-3">
                             <div className="relative">
-                                <User className="absolute top-3.5 right-3 w-5 h-5 text-gray-400" />
+                                <User className={`absolute top-3.5 w-5 h-5 text-gray-400 ${lang === 'ar' ? 'right-3' : 'left-3'}`} />
                                 <input
                                     required
                                     type="text"
-                                    placeholder="الاسم الكامل"
+                                    placeholder={t('checkout.name_placeholder')}
+                                    minLength={3}
                                     value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full pr-10 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                    onChange={e => {
+                                        setFormData({ ...formData, name: e.target.value });
+                                        if (errors.name) setErrors({ ...errors, name: undefined });
+                                    }}
+                                    className={`w-full py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all ${lang === 'ar' ? 'pr-10 pl-4' : 'pl-10 pr-4'} ${errors.name ? 'border-red-400' : 'border-gray-200'}`}
                                 />
+                                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                             </div>
 
                             <div className="relative">
-                                <Phone className="absolute top-3.5 right-3 w-5 h-5 text-gray-400" />
+                                <Phone className={`absolute top-3.5 w-5 h-5 text-gray-400 ${lang === 'ar' ? 'right-3' : 'left-3'}`} />
                                 <input
                                     required
                                     type="tel"
-                                    placeholder="رقم الهاتف"
+                                    dir="ltr"
+                                    placeholder="01XXXXXXXXX"
+                                    maxLength={11}
                                     value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full pr-10 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        setFormData({ ...formData, phone: val });
+                                        if (errors.phone) setErrors({ ...errors, phone: undefined });
+                                    }}
+                                    className={`w-full py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all ${lang === 'ar' ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'} ${errors.phone ? 'border-red-400' : 'border-gray-200'}`}
                                 />
+                                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                             </div>
 
                             {/* Show map location if delivery */}
@@ -313,7 +356,7 @@ export default function Checkout() {
                                 <div className="bg-primary/5 p-3 rounded-xl border border-primary/20 flex gap-3 items-center text-sm">
                                     <MapPin className="w-5 h-5 text-primary shrink-0" />
                                     <div>
-                                        <p className="text-xs text-gray-500">الموقع من الخريطة</p>
+                                        <p className="text-xs text-gray-500">{t('checkout.map_location')}</p>
                                         <p className="font-medium text-gray-700">{deliveryAddress}</p>
                                     </div>
                                 </div>
@@ -321,29 +364,33 @@ export default function Checkout() {
 
                             {/* User enters additional address details */}
                             <div className="relative">
-                                <Home className="absolute top-3.5 right-3 w-5 h-5 text-gray-400" />
+                                <Home className={`absolute top-3.5 w-5 h-5 text-gray-400 ${lang === 'ar' ? 'right-3' : 'left-3'}`} />
                                 <input
                                     required={serviceType === 'delivery'}
                                     type="text"
-                                    placeholder="اسم الشارع / رقم المبنى / علامة مميزة"
+                                    placeholder={t('checkout.address_placeholder')}
                                     value={formData.address}
-                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    className="w-full pr-10 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                    onChange={e => {
+                                        setFormData({ ...formData, address: e.target.value });
+                                        if (errors.address) setErrors({ ...errors, address: undefined });
+                                    }}
+                                    className={`w-full py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all ${lang === 'ar' ? 'pr-10 pl-4' : 'pl-10 pr-4'} ${errors.address ? 'border-red-400' : 'border-gray-200'}`}
                                 />
+                                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                             </div>
 
                             {serviceType === 'delivery' && (
                                 <div className="grid grid-cols-2 gap-3">
                                     <input
                                         type="text"
-                                        placeholder="الطابق"
+                                        placeholder={t('checkout.floor')}
                                         value={formData.floor}
                                         onChange={e => setFormData({ ...formData, floor: e.target.value })}
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                     />
                                     <input
                                         type="text"
-                                        placeholder="رقم الشقة"
+                                        placeholder={t('checkout.apartment')}
                                         value={formData.apartment}
                                         onChange={e => setFormData({ ...formData, apartment: e.target.value })}
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
@@ -362,8 +409,8 @@ export default function Checkout() {
                                         <CreditCard className="w-5 h-5 text-green-500" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-800">طريقة الدفع</h3>
-                                        <p className="text-xs text-gray-400">اختر طريقة الدفع المفضلة</p>
+                                        <h3 className="font-bold text-gray-800">{t('checkout.payment_method')}</h3>
+                                        <p className="text-xs text-gray-400">{lang === 'ar' ? 'اختر طريقة الدفع المفضلة' : lang === 'en' ? 'Select your preferred payment method' : 'Выберите способ оплаты'}</p>
                                     </div>
                                 </div>
 
@@ -384,9 +431,9 @@ export default function Checkout() {
                                             </div>
                                             <div className="text-center">
                                                 <span className={`font-bold text-sm block ${paymentMethod === 'cash' ? 'text-primary' : 'text-gray-700'}`}>
-                                                    عند الإستلام
+                                                    {t('checkout.cash')}
                                                 </span>
-                                                <span className="text-xs text-gray-400">كاش</span>
+                                                <span className="text-xs text-gray-400">{lang === 'ar' ? 'كاش' : lang === 'en' ? 'Cash' : 'Наличные'}</span>
                                             </div>
                                             {paymentMethod === 'cash' && (
                                                 <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
@@ -412,7 +459,7 @@ export default function Checkout() {
                                             </div>
                                             <div className="text-center">
                                                 <span className={`font-bold text-sm block ${paymentMethod === 'card' ? 'text-primary' : 'text-gray-700'}`}>
-                                                    بطاقة ائتمان
+                                                    {t('checkout.card')}
                                                 </span>
                                                 <span className="text-xs text-gray-400">Visa / Mastercard</span>
                                             </div>
@@ -438,12 +485,12 @@ export default function Checkout() {
                                 {paymentMethod === 'cash' ? (
                                     <>
                                         <Banknote className="w-5 h-5 text-primary" />
-                                        <span>الدفع عند الإستلام (كاش)</span>
+                                        <span>{t('checkout.cash_only')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <CreditCard className="w-5 h-5 text-primary" />
-                                        <span>الدفع ببطاقة ائتمان - سيتم تحويلك للدفع الآمن</span>
+                                        <span>{t('checkout.card_redirect')}</span>
                                     </>
                                 )}
                             </div>
@@ -460,17 +507,17 @@ export default function Checkout() {
                         {submitting ? (
                             <>
                                 <Loader2 className="w-6 h-6 animate-spin" />
-                                جاري المعالجة...
+                                {t('checkout.processing')}
                             </>
                         ) : paymentMethod === 'card' ? (
                             <>
                                 <CreditCard className="w-6 h-6" />
-                                ادفع {total} {t('common.currency')}
+                                {t('checkout.pay_amount')} {total} {t('common.currency')}
                             </>
                         ) : (
                             <>
                                 <CheckCircle className="w-6 h-6" />
-                                تأكيد الطلب - {total} {t('common.currency')}
+                                {t('checkout.confirm_order')} - {total} {t('common.currency')}
                             </>
                         )}
                     </Button>
@@ -478,7 +525,7 @@ export default function Checkout() {
                     {/* Security Badge */}
                     <div className="text-center text-xs text-gray-400 flex items-center justify-center gap-2">
                         <span>🔐</span>
-                        معاملة آمنة 100% - مشفرة ومحمية
+                        {t('checkout.security_badge')}
                     </div>
                 </form >
             </div >
