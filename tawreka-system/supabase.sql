@@ -971,3 +971,40 @@ CREATE POLICY "Public read gallery" ON public.about_gallery FOR
 SELECT USING (true);
 
 CREATE POLICY "Admins manage gallery" ON public.about_gallery FOR ALL TO authenticated USING (true);
+
+-- =============================================
+-- PHASE 5: WEBSITE CHECKOUT SUPPORT
+-- =============================================
+-- Add columns for guest checkout (website without WhatsApp registration)
+
+ALTER TABLE public.orders
+ADD COLUMN IF NOT EXISTS customer_name TEXT,
+ADD COLUMN IF NOT EXISTS customer_phone TEXT,
+ADD COLUMN IF NOT EXISTS customer_address TEXT,
+ADD COLUMN IF NOT EXISTS delivery_lat FLOAT,
+ADD COLUMN IF NOT EXISTS delivery_lng FLOAT,
+ADD COLUMN IF NOT EXISTS service_type TEXT DEFAULT 'pickup',
+ADD COLUMN IF NOT EXISTS total DECIMAL(10, 2) DEFAULT 0.00;
+
+-- Add comment for documentation
+COMMENT ON COLUMN public.orders.customer_name IS 'Guest checkout customer name (website orders)';
+
+COMMENT ON COLUMN public.orders.customer_phone IS 'Guest checkout customer phone (website orders)';
+
+COMMENT ON COLUMN public.orders.customer_address IS 'Guest checkout delivery address text (website orders)';
+
+COMMENT ON COLUMN public.orders.service_type IS 'pickup or delivery';
+
+-- Allow public INSERT for guest checkout
+CREATE POLICY "Public insert orders" ON public.orders FOR
+INSERT
+WITH
+    CHECK (true);
+
+-- Payment method settings for admin control
+INSERT INTO public.site_settings (key, value, type, description) VALUES
+('payment_cash_enabled', 'true', 'boolean', 'Enable cash on delivery'),
+('payment_card_enabled', 'false', 'boolean', 'Enable card payments via Paymob'),
+('paymob_iframe_id', '', 'text', 'Paymob Iframe ID from dashboard'),
+('paymob_integration_id', '', 'text', 'Paymob Integration ID from dashboard')
+ON CONFLICT (key) DO NOTHING;

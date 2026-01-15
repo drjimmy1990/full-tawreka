@@ -1,8 +1,9 @@
 import { Router } from 'express';
 // Import the new controller
 import { checkCoverage, getAvailableZones } from '../controllers/geoController';
-import { createOrder, getOrder, updateOrderStatus, requestModification } from '../controllers/orderController';
+import { createOrder, createCustomerOrder, getOrder, updateOrderStatus, requestModification } from '../controllers/orderController';
 import { getBranchMenu, getBranches, getSiteSettings } from '../controllers/menuController';
+import { initiatePayment, getPaymentConfig } from '../controllers/paymentController';
 import { verifyApiKey } from '../middleware/auth';
 
 const router = Router();
@@ -33,5 +34,10 @@ router.get('/geo/zones', getAvailableZones);       // <--- NEW
 router.get('/branches', getBranches);            // <--- NEW: List all active branches
 router.get('/branches/:id/menu', getBranchMenu);
 router.get('/orders/:id', getOrder); // "Track my Order" should be public (with UUID usually, but ID ok for now)
+router.post('/checkout/order', createCustomerOrder); // <--- PUBLIC: Customer checkout order creation
+
+// 4. Payments (Paymob)
+router.post('/payments/initiate', initiatePayment);  // Initiate payment and get iframe URL
+router.get('/payments/config', getPaymentConfig);    // Get iframe config for frontend
 
 export default router;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo } from 'react';
 import { api } from '../../services/api';
-import { Save, Upload, Loader2, Palette, Image as ImageIcon, Phone, Globe, X } from 'lucide-react';
+import { Save, Upload, Loader2, Palette, Image as ImageIcon, Phone, Globe, X, CreditCard } from 'lucide-react';
 import { useI18n } from '../../i18n';
 
 // Move Section outside to prevent re-creation
@@ -296,6 +296,83 @@ const SiteSettings: React.FC = () => {
                         {renderInput('Twitter / X', 'twitter_link')}
                     </div>
                 </div>
+            </Section>
+
+            {/* PAYMENT METHODS */}
+            <Section title={language === 'ar' ? 'طرق الدفع' : 'Payment Methods'} icon={CreditCard}>
+                <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-gray-500 mb-2">
+                        {language === 'ar' ? 'طرق الدفع المتاحة' : 'Available Payment Methods'}
+                    </label>
+                    <div className="flex flex-wrap gap-3 mb-4">
+                        {/* Cash on Delivery Toggle */}
+                        <label
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 cursor-pointer select-none transition-all ${settings['payment_cash_enabled'] === 'true'
+                                ? 'bg-green-50 border-green-300 text-green-700 shadow-sm'
+                                : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-gray-300'
+                                }`}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={settings['payment_cash_enabled'] === 'true'}
+                                onChange={() => handleInputChange('payment_cash_enabled', settings['payment_cash_enabled'] === 'true' ? 'false' : 'true')}
+                                className="w-4 h-4 text-green-600 rounded"
+                            />
+                            <span className="font-bold">
+                                {language === 'ar' ? '💵 الدفع عند الاستلام' : '💵 Cash on Delivery'}
+                            </span>
+                        </label>
+
+                        {/* Card Payment Toggle */}
+                        <label
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 cursor-pointer select-none transition-all ${settings['payment_card_enabled'] === 'true'
+                                ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-sm'
+                                : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-gray-300'
+                                }`}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={settings['payment_card_enabled'] === 'true'}
+                                onChange={() => handleInputChange('payment_card_enabled', settings['payment_card_enabled'] === 'true' ? 'false' : 'true')}
+                                className="w-4 h-4 text-blue-600 rounded"
+                            />
+                            <span className="font-bold">
+                                {language === 'ar' ? '💳 بطاقة ائتمان (Paymob)' : '💳 Credit Card (Paymob)'}
+                            </span>
+                        </label>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                        {language === 'ar'
+                            ? 'اختر طرق الدفع التي تريد تفعيلها للعملاء. إذا تم تفعيل طريقة واحدة فقط، سيتم تجاوز خطوة الاختيار.'
+                            : 'Select which payment methods to enable for customers. If only one is enabled, the selection step will be skipped.'}
+                    </p>
+                </div>
+
+                {/* Paymob Settings (shown when card is enabled) */}
+                {settings['payment_card_enabled'] === 'true' && (
+                    <div className="md:col-span-2 border-t pt-4 mt-2">
+                        <h4 className="font-bold text-sm mb-3 text-gray-700 flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            {language === 'ar' ? 'إعدادات Paymob' : 'Paymob Settings'}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {renderInput(
+                                language === 'ar' ? 'Iframe ID' : 'Iframe ID',
+                                'paymob_iframe_id'
+                            )}
+                            {renderInput(
+                                language === 'ar' ? 'Integration ID' : 'Integration ID',
+                                'paymob_integration_id'
+                            )}
+                        </div>
+                        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+                            <strong>{language === 'ar' ? 'ملاحظة:' : 'Note:'}</strong>{' '}
+                            {language === 'ar'
+                                ? 'API Key و HMAC Secret يتم تخزينهم في ملف البيئة (.env) للأمان. تواصل مع المطور لتحديثهم.'
+                                : 'API Key and HMAC Secret are stored in environment variables for security. Contact the developer to update them.'}
+                        </div>
+                    </div>
+                )}
             </Section>
 
             {/* BUSINESS INFO */}

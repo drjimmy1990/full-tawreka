@@ -157,7 +157,7 @@ export const api = {
         }>;
         notes?: string;
     }) => {
-        const { data } = await apiClient.post('/orders', orderData);
+        const { data } = await apiClient.post('/checkout/order', orderData);
         return data;
     },
 
@@ -173,6 +173,46 @@ export const api = {
             console.error('Failed to fetch gallery:', e);
             return [];
         }
+    },
+
+    // ==========================================
+    // PAYMENTS (Paymob)
+    // ==========================================
+    initiatePayment: async (paymentData: {
+        amount_cents: number;
+        order_id: number | string;
+        customer_name?: string;
+        customer_email?: string;
+        customer_phone?: string;
+        billing_data?: {
+            first_name: string;
+            last_name: string;
+            email: string;
+            phone_number: string;
+            street: string;
+            building: string;
+            floor: string;
+            apartment: string;
+            city: string;
+            state: string;
+            country: string;
+            postal_code: string;
+            shipping_method?: string;
+        };
+    }): Promise<{
+        success: boolean;
+        iframe_url: string;
+        payment_token: string;
+        paymob_order_id: number;
+        merchant_order_id: string | number;
+    }> => {
+        const { data } = await apiClient.post('/payments/initiate', paymentData);
+        return data;
+    },
+
+    getPaymentConfig: async (): Promise<{ iframe_id: string; integration_id: string }> => {
+        const { data } = await apiClient.get('/payments/config');
+        return data;
     },
 };
 

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tawriqa - Payment</title>
+
+    <!-- Google Fonts: Cairo for Arabic support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #415A3E;
+            --primary-dark: #2E402C;
+            --secondary: #CCA876;
+            --text-dark: #1F2937;
+            --text-muted: #6B7280;
+            --bg-light: #F9FAFB;
+            --bg-input: #F3F4F6;
+            --border: #E5E7EB;
+            --success: #10B981;
+            --error: #EF4444;
+            --white: #FFFFFF;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #E8F5E9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .payment-container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header with Logo */
+        .payment-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 28px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .payment-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: var(--white);
+            border-radius: 50% 50% 0 0;
+        }
+
+        .logo-wrapper {
+            width: 80px;
+            height: 80px;
+            background: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-wrapper img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+        }
+
+        .header-title {
+            color: var(--white);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        /* Payment Type Badge */
+        .payment-type {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--bg-light);
+            margin: 24px 24px 0;
+            border-radius: 12px;
+        }
+
+        .payment-type-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .payment-type-label svg {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+        }
+
+        .card-logos {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card-logos img {
+            height: 24px;
+            opacity: 0.8;
+        }
+
+        /* Form Styles */
+        .payment-form {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 52px;
+            padding: 0 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-input);
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(65, 90, 62, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        /* Card Number with Icon */
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon .form-input {
+            padding-right: 48px;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Save Card Checkbox */
+        .save-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .save-card input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-custom {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .save-card input:checked+.checkbox-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom svg {
+            width: 14px;
+            height: 14px;
+            color: var(--white);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .save-card input:checked+.checkbox-custom svg {
+            opacity: 1;
+        }
+
+        .save-card-label {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 14px;
+            color: var(--white);
+            font-family: 'Cairo', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(65, 90, 62, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Footer */
+        .payment-footer {
+            text-align: center;
+            padding: 20px 24px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .payment-footer span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .payment-footer img {
+            height: 22px;
+            opacity: 0.7;
+        }
+
+        /* Security Badge */
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 16px;
+            padding: 10px;
+            background: #E8F5E9;
+            border-radius: 8px;
+        }
+
+        .security-badge svg {
+            width: 16px;
+            height: 16px;
+            color: var(--success);
+        }
+
+        .security-badge span {
+            font-size: 12px;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .payment-container {
+                border-radius: 20px;
+            }
+
+            .payment-header {
+                padding: 24px 20px;
+            }
+
+            .payment-form {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .form-row .form-group:last-child {
+                grid-column: span 2;
+            }
+        }
+
+        /* Hidden field */
+        input[type="hidden"] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="payment-container">
+        <!-- Header -->
+        <header class="payment-header">
+            <div class="logo-wrapper">
+                <!-- Logo: Using text fallback - Replace with hosted image URL -->
+                <span style="font-size: 24px; font-weight: 700; color: #415A3E;">توريقة</span>
+            </div>
+            <h1 class="header-title">الدفع الآمن</h1>
+            <p class="header-subtitle">أكمل عملية الدفع بأمان</p>
+        </header>
+
+        <!-- Payment Type -->
+        <div class="payment-type">
+            <div class="payment-type-label">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span>بطاقة ائتمان</span>
+            </div>
+            <div class="card-logos">
+                <img src="https://accept.paymob.com/api/acceptance/assets/logos/mastercard.png" alt="Mastercard">
+                <img src="https://accept.paymob.com/api/acceptance/assets/logos/visa.png" alt="Visa">
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <form id="paymob_checkout" class="payment-form">
+            <!-- Card Number -->
+            <div class="form-group">
+                <label class="form-label">رقم البطاقة</label>
+                <div class="input-with-icon">
+                    <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="16" required
+                        paymob_field="card_number">
+                    <div class="input-icon">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Holder Name -->
+            <div class="form-group">
+                <label class="form-label">اسم حامل البطاقة</label>
+                <input type="text" class="form-input" placeholder="AHMED MOHAMED" required
+                    paymob_field="card_holdername">
+            </div>
+
+            <!-- Expiry & CVV Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">الشهر</label>
+                    <input type="text" class="form-input" placeholder="MM" maxlength="2" required
+                        paymob_field="card_expiry_mm">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">السنة</label>
+                    <input type="text" class="form-input" placeholder="YY" maxlength="2" required
+                        paymob_field="card_expiry_yy">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CVV</label>
+                    <input type="text" class="form-input" placeholder="***" maxlength="4" required
+                        paymob_field="card_cvn">
+                </div>
+            </div>
+
+            <!-- Hidden Subtype -->
+            <input type="hidden" value="CARD" paymob_field="subtype">
+
+            <!-- Save Card Option -->
+            <label class="save-card">
+                <input type="checkbox" value="tokenize" name="save_card" id="save_card">
+                <span class="checkbox-custom">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                </span>
+                <span class="save-card-label">حفظ البطاقة للمرات القادمة</span>
+            </label>
+
+            <!-- Security Badge -->
+            <div class="security-badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>معاملة آمنة 100% ومشفرة</span>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>ادفع الآن</span>
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <footer class="payment-footer">
+            <span>مدعوم من</span>
+            <img src="https://accept.paymob.com/api/acceptance/assets/logos/paymob.png" alt="Paymob">
+        </footer>
+    </div>
+</body>
+
+</html>

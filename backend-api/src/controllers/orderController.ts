@@ -90,6 +90,109 @@ export const createOrder = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Customer Checkout Order Creation
+ * This is for the public website checkout - accepts customer details directly
+ */
+export const createCustomerOrder = async (req: Request, res: Response) => {
+    try {
+        const {
+            branch_id,
+            service_type,
+            customer_name,
+            customer_phone,
+            customer_address,
+            delivery_lat,
+            delivery_lng,
+            items,
+            notes,
+            payment_method
+        } = req.body;
+
+        // 1. Validate required fields
+        if (!branch_id || !customer_name || !customer_phone || !items || !items.length) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                details: 'branch_id, customer_name, customer_phone, and items are required'
+            });
+        }
+
+        // 2. Fetch Branch
+        const { data: branch, error: branchError } = await supabase
+            .from('branches')
+            .select('*')
+            .eq('id', branch_id)
+            .eq('is_active', true)
+            .single();
+
+        if (branchError || !branch) {
+            return res.status(404).json({ error: 'Branch not found or inactive' });
+        }
+
+        // 3. Calculate delivery fee if delivery
+        let deliveryFee = 0;
+        if (service_type === 'delivery' && delivery_lat && delivery_lng && branch.zones) {
+            for (const zone of branch.zones as Zone[]) {
+                if (isPointInPolygon({ lat: delivery_lat, lng: delivery_lng }, zone.polygon)) {
+                    deliveryFee = zone.delivery_fee;
+                    break;
+                }
+            }
+        }
+
+        // 4. Calculate Subtotal
+        const subtotal = items.reduce((sum: number, item: any) => {
+            const itemPrice = item.unit_price || item.price || 0;
+            const itemQty = item.quantity || item.qty || 1;
+            return sum + (itemPrice * itemQty);
+        }, 0);
+
+        // 5. Insert Order
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .insert({
+                branch_id: branch_id,
+                customer_name: customer_name,
+                customer_phone: customer_phone,
+                customer_address: customer_address || '',
+                delivery_lat: delivery_lat,
+                delivery_lng: delivery_lng,
+                service_type: service_type || 'pickup',
+                items: items,
+                kitchen_notes: notes,
+                subtotal: subtotal,
+                delivery_fee: deliveryFee,
+                total: subtotal + deliveryFee,
+                status: 'pending',
+                // Map 'card' to 'credit_card' (database enum value)
+                payment_method: payment_method === 'card' ? 'credit_card' : (payment_method || 'cash'),
+                payment_status: 'pending'
+            })
+            .select()
+            .single();
+
+        if (orderError) {
+            console.error('Order Insert Error:', orderError);
+            throw orderError;
+        }
+
+        console.log('Order created:', order.id);
+
+        res.status(201).json({
+            success: true,
+            order_id: order.id,
+            daily_seq: order.daily_seq,
+            branch_name: branch.name,
+            total_price: subtotal + deliveryFee,
+            message: 'Order created successfully'
+        });
+
+    } catch (err: any) {
+        console.error('Create Customer Order Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
 export const getOrder = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

@@ -1,0 +1,61 @@
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<header>
+    <h1 class="page-title">الدفع الآمن - توريقة</h1>
+</header>
+
+<div class="containers">
+    <div class="row formRowContainer">
+        <div class="col-md-12 col-sm-12">
+            <section class="card-inputs">
+                <form id="paymob_checkout">
+                    <input type="hidden" value="CARD" paymob_field="card_number" id="card_number">
+                    <input type="hidden" value="CARD" paymob_field="card_expiry_mm" id="mm">
+                    <input type="hidden" value="CARD" paymob_field="card_expiry_yy" id="yy">
+                    <input type="hidden" value="" name="tenure" paymob_field="tenure" id="tenureHiddenInput">
+                    <input type="hidden" value="CARD" paymob_field="subtype">
+
+                    <div class="card-num-input">
+                        <label>رقم البطاقة</label>
+                        <input placeholder="0000 0000 0000 0000" onchange="update_two_hidden_fields();" type="tel"
+                            name="number" id="number" class="card-num">
+                    </div>
+
+                    <div class="card-num-input">
+                        <label>اسم حامل البطاقة</label>
+                        <input placeholder="AHMED MOHAMED" type="text" name="name" paymob_field="card_holdername">
+                    </div>
+
+                    <div class="input-containers">
+                        <div class="input-half">
+                            <label>تاريخ الإنتهاء</label>
+                            <input placeholder="MM/YY" onchange="update_two_hidden_fields();" type="tel" name="expiry"
+                                id="mmyy">
+                        </div>
+                        <div class="input-half">
+                            <label>CVV</label>
+                            <input placeholder="***" type="tel" name="cvc" paymob_field="card_cvn">
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="saveCardText">
+                            <input type="checkbox" value="tokenize" name="save card" id="saveCard">
+                            <label for="saveCard">حفظ البطاقة</label>
+                        </div>
+                        <button id="submitButtonWaiting" class="submit" style="display: none;" disabled>
+                            <i class="fa fa-spinner fa-pulse"></i>
+                        </button>
+                        <input id="submitButton" type="submit" value="ادفع الآن" class="submit">
+                        <span class="security-text">🔒 معاملة آمنة</span>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>

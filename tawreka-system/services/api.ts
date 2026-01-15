@@ -61,13 +61,15 @@ export const api = {
     }
 
     // Map the joined data to flat Order structure
+    // Support BOTH: direct columns (website orders) AND FK relations (n8n bot orders)
     return data.map((order: any) => ({
       ...order,
-      customer_name: order.customers?.full_name || 'App Customer',
-      customer_phone: order.customers?.phone_number || 'N/A',
-      address_text: order.customer_addresses?.address_text || 'Pick Up',
-      customer_lat: order.customer_addresses?.latitude,
-      customer_lng: order.customer_addresses?.longitude
+      // Priority: Direct column > FK relation > Fallback
+      customer_name: order.customer_name || order.customers?.full_name || 'App Customer',
+      customer_phone: order.customer_phone || order.customers?.phone_number || 'N/A',
+      address_text: order.customer_address || order.customer_addresses?.address_text || (order.service_type === 'pickup' ? 'Pick Up' : 'Delivery'),
+      customer_lat: order.delivery_lat || order.customer_addresses?.latitude,
+      customer_lng: order.delivery_lng || order.customer_addresses?.longitude
     })) as Order[];
   },
 

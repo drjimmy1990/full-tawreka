@@ -11,6 +11,8 @@ import Checkout from './pages/Checkout';
 import LocationSelection from './pages/LocationSelection';
 import Branches from './pages/Branches';
 import About from './pages/About';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentFailed from './pages/PaymentFailed';
 
 function App() {
     const { setSettings, getLocalizedSetting, getSetting } = useSettingsStore();
@@ -94,6 +96,10 @@ function App() {
 
                     {/* Checkout */}
                     <Route path="/checkout" element={<Checkout />} />
+
+                    {/* Payment Result Pages (Paymob redirects here) */}
+                    <Route path="/checkout/success" element={<PaymentSuccess />} />
+                    <Route path="/checkout/failed" element={<PaymentFailed />} />
 
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/" replace />} />
