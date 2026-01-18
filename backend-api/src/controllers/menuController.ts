@@ -25,7 +25,7 @@ export const getBranches = async (req: Request, res: Response) => {
     try {
         const { data, error } = await supabase
             .from('branches')
-            .select('id, name, name_ar, name_en, name_ru, phone_contact, zones, opening_time, closing_time, address_ar, address_en, address_ru, google_maps_embed, google_maps_link, is_active')
+            .select('id, name, name_ar, name_en, name_ru, phone_contact, zones, opening_time, closing_time, address_ar, address_en, address_ru, google_maps_embed, google_maps_link, is_active, is_delivery_available') // Added is_delivery_available
             .eq('is_active', true);
 
         if (error) throw error;
@@ -124,8 +124,8 @@ export const getBranchMenu = async (req: Request, res: Response) => {
             // Get Branch Override
             const branchPriceData = priceMap.get(item.id);
 
-            // Check availability - if explicit false, skip. Default is true (even if no row)
-            if (branchPriceData && branchPriceData.is_available === false) return;
+            // CHANGED: We do NOT skip items if is_available is false. We pass the status to frontend.
+            const isAvailable = branchPriceData ? branchPriceData.is_available : true;
 
             // Calculate Price (Override or Base)
             const finalPrice = branchPriceData ? branchPriceData.price : item.base_price;
@@ -197,6 +197,7 @@ export const getBranchMenu = async (req: Request, res: Response) => {
                 image_url: item.image_url,
                 base_price: item.base_price,
                 current_price: finalPrice,
+                is_available: isAvailable, // Added
                 options: itemOptions as unknown as OptionGroup[]
             };
 

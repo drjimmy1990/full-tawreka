@@ -18,8 +18,9 @@ export default function LocationSelection() {
     const { setServiceType, setBranch, setDeliveryLocation, deliveryAddress } = useLocationStore();
     const { settings } = useSettingsStore();
 
-    // UI State
-    const [mode, setMode] = useState<'delivery' | 'pickup'>('delivery');
+    // UI State - Read mode from URL query param (for Menu button that defaults to pickup)
+    const initialMode = searchParams.get('mode') === 'pickup' ? 'pickup' : 'delivery';
+    const [mode, setMode] = useState<'delivery' | 'pickup'>(initialMode);
     const [deliveryMethod, setDeliveryMethod] = useState<'map' | 'dropdown'>('map');
     const [isChecking, setIsChecking] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -55,6 +56,9 @@ export default function LocationSelection() {
 
                 // 4. Go to destination (from redirect param or default to menu)
                 navigate(redirectTo);
+            } else if ((result as any).delivery_unavailable) {
+                // Branch found but delivery temporarily unavailable
+                setErrorMsg(t('location.delivery_unavailable') + (result.branch_name ? ` (${result.branch_name})` : ''));
             } else {
                 setErrorMsg(t('location.not_covered'));
             }
@@ -95,7 +99,7 @@ export default function LocationSelection() {
                             <MapPin className="w-4 h-4" /> {t('landing.delivery')}
                         </button>
                         <button
-                            onClick={() => setMode('pickup')}
+                            onClick={() => { setMode('pickup'); setErrorMsg(null); }}
                             className={clsx(
                                 "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all",
                                 mode === 'pickup' ? "bg-primary text-white shadow-md" : "text-gray-500 hover:text-gray-900"
@@ -145,6 +149,13 @@ export default function LocationSelection() {
                                         }}
                                     />
 
+                                    {/* Error Message - Overlayed above button */}
+                                    {errorMsg && (
+                                        <div className="p-3 bg-red-50 text-red-600 text-sm font-bold text-center rounded-lg border border-red-100 animate-fade-in">
+                                            {errorMsg}
+                                        </div>
+                                    )}
+
                                     <button
                                         onClick={() => {
                                             const { deliveryLat, deliveryLng, deliveryAddress } = useLocationStore.getState();
@@ -173,12 +184,6 @@ export default function LocationSelection() {
                         <BranchList />
                     )}
 
-                    {/* Error Toast */}
-                    {errorMsg && (
-                        <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm font-bold text-center rounded-lg border border-red-100 animate-fade-in">
-                            {errorMsg}
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

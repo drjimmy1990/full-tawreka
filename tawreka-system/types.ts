@@ -30,6 +30,7 @@ export interface Branch {
   phone_contact?: string;
   zones: Zone[];
   is_active: boolean;
+  is_delivery_available?: boolean;
   created_at: string;
 }
 

@@ -191,6 +191,11 @@ const BranchPriceManager: React.FC = () => {
                                                         <div>
                                                             {getName(item)}
                                                             {isCustom && <span className="ltr:ml-2 rtl:mr-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{t('prices.custom')}</span>}
+                                                            {!item.is_active && (
+                                                                <span className="ltr:ml-2 rtl:mr-2 text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                                    <XCircle className="w-3 h-3" /> Global Hidden
+                                                                </span>
+                                                            )}
                                                             {hasOptions && <div className="text-[10px] text-gray-400 mt-0.5">{item.options.length} {t('menu.groups')}</div>}
                                                         </div>
                                                     </div>
@@ -247,8 +252,8 @@ const BranchPriceManager: React.FC = () => {
                                                         }}
                                                         disabled={saving === item.id}
                                                         className={`font-bold text-xs px-3 py-1.5 rounded transition-all ${saveSuccess === item.id
-                                                                ? 'text-green-600 border border-green-200 bg-green-50'
-                                                                : 'text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 hover:bg-blue-100'
+                                                            ? 'text-green-600 border border-green-200 bg-green-50'
+                                                            : 'text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 hover:bg-blue-100'
                                                             } disabled:opacity-50`}
                                                     >
                                                         {saving === item.id ? (

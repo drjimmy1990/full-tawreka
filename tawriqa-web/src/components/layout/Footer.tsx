@@ -18,7 +18,7 @@ export default function Footer() {
     // Quick links
     const quickLinks = [
         { label: t('landing.home') || 'الرئيسية', action: () => navigate('/') },
-        { label: t('landing.menu') || 'المنيو', action: () => navigate('/location?redirect=menu') },
+        { label: t('landing.menu') || 'المنيو', action: () => navigate('/location?redirect=menu&mode=pickup') },
         { label: t('landing.about') || 'عن توريقة', action: () => navigate('/#story') },
         { label: t('landing.contact_us') || 'اتصل بنا', action: () => navigate('/#contact') },
     ];

@@ -4,6 +4,7 @@ dotenv.config(); // Load env vars before other imports
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+// v2.1 - Force restart at 2026-01-18 23:15 - Updated geoController with is_available flag
 import apiRoutes from './routes/api'; // <--- Import Routes
 
 const app = express();

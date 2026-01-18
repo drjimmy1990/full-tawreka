@@ -10,13 +10,27 @@ interface MenuItemProps {
     hasOptions?: boolean;
     minPrice?: number;
     onAdd: () => void;
+    isAvailable?: boolean; // New Prop
 }
 
-export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice }: MenuItemProps) {
+export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice, isAvailable }: MenuItemProps) {
     const { t } = useTranslation();
 
+    // Default to true if undefined
+    const available = isAvailable !== false;
+
     return (
-        <div className="group bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-all hover:shadow-md hover:border-primary/20">
+        <div className={`group bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-all relative overflow-hidden ${available ? 'hover:shadow-md hover:border-primary/20' : 'opacity-60 grayscale'}`}>
+
+            {/* Out of Stock Overlay */}
+            {!available && (
+                <div className="absolute inset-0 z-20 bg-gray-50/50 flex items-center justify-center">
+                    <span className="bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded-full">
+                        {t('menu.out_of_stock') || 'Out of Stock'}
+                    </span>
+                </div>
+            )}
+
             {/* Image Container */}
             <div className="w-28 h-28 bg-gray-100 rounded-xl shrink-0 overflow-hidden relative">
                 <img
@@ -24,7 +38,6 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
                     alt={name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                {/* Optional: Add badge or overlay here if needed */}
             </div>
 
             {/* Content Container */}
@@ -41,8 +54,12 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
                     </span>
 
                     <button
-                        onClick={onAdd}
-                        className="bg-gray-50 w-10 h-10 rounded-full flex items-center justify-center text-primary font-bold shadow-sm hover:bg-primary hover:text-white hover:scale-110 active:scale-95 transition-all"
+                        onClick={available ? onAdd : undefined}
+                        disabled={!available}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm transition-all ${available
+                                ? 'bg-gray-50 text-primary hover:bg-primary hover:text-white hover:scale-110 active:scale-95'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
                     >
                         <Plus className="w-5 h-5" />
                     </button>

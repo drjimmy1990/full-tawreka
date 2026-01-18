@@ -6,6 +6,7 @@ export interface Branch {
     opening_time?: string;
     closing_time?: string;
     is_active?: boolean;
+    is_delivery_available?: boolean; // New
 }
 
 // Menu Options Types

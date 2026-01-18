@@ -25,6 +25,7 @@ const translations: Record<string, Record<string, string>> = {
         'landing.branches': 'فروعنا',
         'landing.about': 'من نحن',
         'landing.contact_us': 'اتصل بنا',
+        'landing.order_now': 'اطلب دلوقتى',
         'header.branches': 'فروعنا',
         'header.about': 'من نحن',
         'about.order_now': 'اطلب الأن',
@@ -41,6 +42,7 @@ const translations: Record<string, Record<string, string>> = {
         'location.continue': 'متابعة للقائمة',
         'location.nearby_branches': 'الفروع القريبة',
         'location.delivery_location': 'موقع التوصيل',
+        'location.delivery_unavailable': 'التوصيل غير متاح حالياً',
         'location.pickup_subtitle': 'اختر الفرع الأقرب إليك لاستلام طلبك',
         'location.delivery_subtitle': 'حدد موقعك على الخريطة لتوصيل طلبك',
 
@@ -55,6 +57,7 @@ const translations: Record<string, Record<string, string>> = {
         'menu.add_to_cart': 'أضف للسلة',
         'menu.required': 'مطلوب',
         'menu.optional': 'اختياري',
+        'menu.out_of_stock': 'غير متوفر الآن',
 
         // Cart
         'cart.title': 'سلة الطلب',
@@ -175,6 +178,7 @@ const translations: Record<string, Record<string, string>> = {
         'landing.branches': 'Branches',
         'landing.about': 'About Us',
         'landing.contact_us': 'Contact Us',
+        'landing.order_now': 'Order Now',
         'header.branches': 'Branches',
         'header.about': 'About Us',
         'about.order_now': 'Order Now',
@@ -191,6 +195,7 @@ const translations: Record<string, Record<string, string>> = {
         'location.continue': 'Continue to Menu',
         'location.nearby_branches': 'Nearby Branches',
         'location.delivery_location': 'Delivery Location',
+        'location.delivery_unavailable': 'Delivery Unavailable Now',
         'location.pickup_subtitle': 'Select the nearest branch to pick up your order',
         'location.delivery_subtitle': 'Pin your location on the map for delivery',
 
@@ -205,6 +210,7 @@ const translations: Record<string, Record<string, string>> = {
         'menu.add_to_cart': 'Add to Cart',
         'menu.required': 'Required',
         'menu.optional': 'Optional',
+        'menu.out_of_stock': 'Unavailable Now',
 
         // Cart
         'cart.title': 'Your Cart',
@@ -312,6 +318,7 @@ const translations: Record<string, Record<string, string>> = {
         'landing.menu': 'Меню',
         'landing.about': 'О Tawriqa',
         'landing.contact_us': 'Свяжитесь с нами',
+        'landing.order_now': 'Заказать сейчас',
 
         // Location
         'location.select_branch': 'Выберите филиал',
@@ -325,6 +332,7 @@ const translations: Record<string, Record<string, string>> = {
         'location.continue': 'Перейти к меню',
         'location.nearby_branches': 'Ближайшие филиалы',
         'location.delivery_location': 'Место доставки',
+        'location.delivery_unavailable': 'Доставка сейчас недоступна',
         'location.pickup_subtitle': 'Выберите ближайший филиал для самовывоза',
         'location.delivery_subtitle': 'Укажите ваше местоположение на карте для доставки',
 
@@ -339,6 +347,7 @@ const translations: Record<string, Record<string, string>> = {
         'menu.add_to_cart': 'В корзину',
         'menu.required': 'Обязательно',
         'menu.optional': 'Необязательно',
+        'menu.out_of_stock': 'Сейчас недоступно',
 
         // Cart
         'cart.title': 'Корзина',

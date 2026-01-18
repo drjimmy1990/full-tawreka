@@ -167,6 +167,7 @@ export default function Menu() {
                                         hasOptions={item.options && item.options.length > 0}
                                         minPrice={calculateMinPrice(item)}
                                         onAdd={() => setSelectedItem(item)}
+                                        isAvailable={item.is_available} // Pass availability
                                     />
                                 ))
                             ) : (

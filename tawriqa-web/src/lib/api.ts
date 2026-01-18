@@ -52,6 +52,7 @@ export interface ZoneItem {
     branch_name: string;
     delivery_fee: number;
     group: string;
+    is_available?: boolean; // NEW: indicates if delivery is available for this zone's branch
 }
 
 export const api = {

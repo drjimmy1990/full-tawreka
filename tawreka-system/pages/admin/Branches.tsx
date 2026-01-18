@@ -55,6 +55,19 @@ const Branches: React.FC = () => {
     setImportMode(false);
   };
 
+  const handleDelete = async (branch: Branch) => {
+    const confirmed = window.confirm(`Are you sure you want to delete "${branch.name}"?\n\nThis will permanently remove the branch and all its zones.`);
+    if (!confirmed) return;
+
+    try {
+      await api.deleteBranch(branch.id);
+      await loadBranches();
+      alert('Branch deleted successfully!');
+    } catch (e: any) {
+      alert('Delete failed: ' + (e.message || 'Unknown error'));
+    }
+  };
+
   // --- SMART GEOJSON IMPORTER ---
   const handleImportGeoJson = () => {
     try {
@@ -128,10 +141,17 @@ const Branches: React.FC = () => {
       if (!Array.isArray(parsedZones)) throw new Error("Zones must be an array");
 
       const branchToSave = { ...editingBranch, zones: parsedZones };
+      console.log('SAVING BRANCH:', JSON.stringify(branchToSave, null, 2));
+      console.log('is_active:', branchToSave.is_active, typeof branchToSave.is_active);
+      console.log('is_delivery_available:', branchToSave.is_delivery_available, typeof branchToSave.is_delivery_available);
+
       await api.saveBranch(branchToSave);
+      alert('Branch saved successfully!');
       await loadBranches();
       setEditingBranch(null);
     } catch (e: any) {
+      console.error('Save Error:', e);
+      alert('Save failed: ' + (e.message || 'Unknown error'));
       setJsonError(e.message || "Invalid JSON format");
     }
   };
@@ -153,7 +173,10 @@ const Branches: React.FC = () => {
             <div key={branch.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">
                 <div className="bg-blue-50 p-3 rounded-full"><Map className="w-6 h-6 text-blue-600" /></div>
-                <button onClick={() => handleEdit(branch)} className="text-gray-400 hover:text-blue-600 transition"><Edit className="w-5 h-5" /></button>
+                <div className="flex gap-2">
+                  <button onClick={() => handleEdit(branch)} className="text-gray-400 hover:text-blue-600 transition"><Edit className="w-5 h-5" /></button>
+                  <button onClick={() => handleDelete(branch)} className="text-gray-400 hover:text-red-600 transition"><Trash2 className="w-5 h-5" /></button>
+                </div>
               </div>
               <h3 className="text-lg font-bold mb-2">{branch.name}</h3>
               <p className="text-gray-500 text-sm mb-4">{branch.phone_contact}</p>
@@ -235,8 +258,12 @@ const Branches: React.FC = () => {
                 <p className="text-xs text-gray-400 mt-1">Link for "Get Directions" button</p>
               </div>
               <div className="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="active" checked={editingBranch.is_active} onChange={(e) => setEditingBranch({ ...editingBranch, is_active: e.target.checked })} />
-                <label htmlFor="active">Active</label>
+                <input type="checkbox" id="active" checked={editingBranch.is_active === true || editingBranch.is_active === 'true'} onChange={(e) => setEditingBranch({ ...editingBranch, is_active: e.target.checked })} />
+                <label htmlFor="active">Active <span className="text-xs text-gray-400">(Current: {String(editingBranch.is_active)})</span></label>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <input type="checkbox" id="delivery" checked={editingBranch.is_delivery_available === true || editingBranch.is_delivery_available === 'true' || editingBranch.is_delivery_available === undefined} onChange={(e) => setEditingBranch({ ...editingBranch, is_delivery_available: e.target.checked })} />
+                <label htmlFor="delivery">Delivery Available <span className="text-xs text-gray-400">(Current: {String(editingBranch.is_delivery_available)})</span></label>
               </div>
             </div>
 

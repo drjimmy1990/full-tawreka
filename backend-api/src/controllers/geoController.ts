@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
 import { isPointInPolygon, isValidCoordinate } from '../utils/geoUtils';
 import { Branch, CoverageResponse, Zone } from '../types';
+// v2.0 - Updated 2026-01-18: Added is_available flag for delivery-disabled branches
 
 export const checkCoverage = async (req: Request, res: Response) => {
     try {
@@ -30,11 +31,14 @@ export const checkCoverage = async (req: Request, res: Response) => {
 
         // 3. The Search Logic
         const userLocation = { lat, lng };
-        let bestMatch: CoverageResponse = { covered: false };
 
-        // Loop through every branch
+        // First pass: Check delivery-ENABLED branches
         for (const branchData of branches) {
             const branch = branchData as Branch;
+            const isDeliveryEnabled = branch.is_delivery_available !== false && (branch as any).is_delivery_available !== 'false';
+
+            // Skip disabled branches in first pass
+            if (!isDeliveryEnabled) continue;
 
             // Safety check: ensure zones exist
             if (!branch.zones || !Array.isArray(branch.zones)) continue;
@@ -44,9 +48,7 @@ export const checkCoverage = async (req: Request, res: Response) => {
                 const isInside = isPointInPolygon(userLocation, zone.polygon);
 
                 if (isInside) {
-                    // FOUND IT!
-                    // We return immediately on the first match.
-                    // (In complex apps, you might compare multiple matches for the cheapest fee)
+                    // FOUND IT! Delivery is available
                     return res.json({
                         covered: true,
                         branch_id: branch.id,
@@ -58,7 +60,36 @@ export const checkCoverage = async (req: Request, res: Response) => {
             }
         }
 
-        // 4. No Match Found
+        // Second pass: Check delivery-DISABLED branches (to give specific message)
+        for (const branchData of branches) {
+            const branch = branchData as Branch;
+            const isDeliveryEnabled = branch.is_delivery_available !== false && (branch as any).is_delivery_available !== 'false';
+
+            // Only check disabled branches in second pass
+            if (isDeliveryEnabled) continue;
+
+            // Safety check: ensure zones exist
+            if (!branch.zones || !Array.isArray(branch.zones)) continue;
+
+            // Loop through every zone in this branch
+            for (const zone of branch.zones) {
+                const isInside = isPointInPolygon(userLocation, zone.polygon);
+
+                if (isInside) {
+                    // Found in a delivery-DISABLED branch
+                    return res.json({
+                        covered: false,
+                        delivery_unavailable: true, // NEW: specific flag
+                        branch_id: branch.id,
+                        branch_name: branch.name,
+                        zone_name: zone.name,
+                        message: 'Delivery temporarily unavailable for this branch'
+                    });
+                }
+            }
+        }
+
+        // 4. No Match Found in ANY branch
         return res.json({
             covered: false,
             message: 'Location is outside all delivery zones.'
@@ -75,7 +106,7 @@ export const getAvailableZones = async (req: Request, res: Response) => {
     try {
         const { data: branches, error } = await supabase
             .from('branches')
-            .select('id, name, zones') // We need the zones JSON
+            .select('id, name, zones, is_delivery_available') // Added is_delivery_available
             .eq('is_active', true);
 
         if (error || !branches) {
@@ -84,8 +115,15 @@ export const getAvailableZones = async (req: Request, res: Response) => {
 
         const allZones: any[] = [];
 
+        console.log('[getAvailableZones] v2.1 - Fetched', branches.length, 'branches. Will include is_available flag.');
+        console.log('[getAvailableZones] Branches:', branches.map((b: any) => ({ name: b.name, is_delivery_available: b.is_delivery_available })));
+
         // Flatten the structure: Branch -> Zones -> List
+        // Now include ALL zones but mark disabled ones with is_available: false
         branches.forEach((branch: any) => {
+            // Check if delivery is available for this branch
+            const isDeliveryAvailable = branch.is_delivery_available !== false && branch.is_delivery_available !== 'false';
+
             if (branch.zones && Array.isArray(branch.zones)) {
                 branch.zones.forEach((zone: any) => {
                     allZones.push({
@@ -94,7 +132,8 @@ export const getAvailableZones = async (req: Request, res: Response) => {
                         branch_name: branch.name,
                         delivery_fee: zone.delivery_fee,
                         // If your zone JSON has 'city', use it. If not, use Branch Name as group
-                        group: zone.city || branch.name
+                        group: zone.city || branch.name,
+                        is_available: isDeliveryAvailable // NEW: indicates if delivery is available
                     });
                 });
             }

@@ -206,6 +206,7 @@ export const api = {
           phone_contact: branch.phone_contact,
           zones: branch.zones,
           is_active: branch.is_active,
+          is_delivery_available: branch.is_delivery_available, // Added
           opening_time: (branch as any).opening_time,
           closing_time: (branch as any).closing_time,
           address_ar: (branch as any).address_ar,
@@ -221,6 +222,11 @@ export const api = {
       const { error } = await supabase.from('branches').insert(newBranch);
       if (error) throw error;
     }
+  },
+
+  deleteBranch: async (id: number): Promise<void> => {
+    const { error } = await supabase.from('branches').delete().eq('id', id);
+    if (error) throw error;
   },
 
   // ----------------------------------------------------
@@ -399,7 +405,7 @@ export const api = {
     // A. Fetch All Items
     const { data: items, error: itemError } = await supabase
       .from('menu_items')
-      .select('id, category_id, name_ar, name_en, base_price')
+      .select('id, category_id, name_ar, name_en, base_price, is_active') // Added is_active
       .order('category_id');
 
     if (itemError) throw itemError;

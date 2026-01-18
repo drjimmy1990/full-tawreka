@@ -29,6 +29,7 @@ export interface Branch {
     phone_contact?: string;
     zones: Zone[];
     is_active: boolean;
+    is_delivery_available?: boolean; // New: Controls delivery status
     created_at: string;
 }
 
@@ -155,6 +156,7 @@ export interface MenuItem {
 
     // Dynamic Fields (Calculated by Backend Logic)
     current_price: number;
+    is_available?: boolean; // New: Controls "Out of Stock" visibility
     options: OptionGroup[];
 
     // Item-specific variations (sizes and extras)

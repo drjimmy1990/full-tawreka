@@ -193,7 +193,7 @@ const MenuBuilder: React.FC = () => {
             description_other: formData.get('description_other') || '',
             base_price: parseFloat(formData.get('base_price') as string) || 0,
             image_url: imageUrl || null,
-            is_active: true
+            is_active: formData.get('is_active') === 'on' // Read from checkbox
         };
 
         try {
@@ -226,6 +226,18 @@ const MenuBuilder: React.FC = () => {
         try {
             await api.deleteMenuItem(id);
             if (selectedCat) loadItems(selectedCat);
+        } catch (err) {
+            alert(t('menu.error_delete'));
+        }
+    };
+
+    const handleDeleteCategory = async (cat: any) => {
+        const confirmed = window.confirm(`Delete category "${cat.name_ar || cat.name_en}"?\n\nItems in this category will NOT be deleted, they will become uncategorized.`);
+        if (!confirmed) return;
+        try {
+            await api.deleteCategory(cat.id);
+            setSelectedCat(null);
+            loadData();
         } catch (err) {
             alert(t('menu.error_delete'));
         }
@@ -307,10 +319,10 @@ const MenuBuilder: React.FC = () => {
                         </div>
                         <div className="overflow-y-auto flex-1 p-2 space-y-1">
                             {categories.map(cat => (
-                                <button
+                                <div
                                     key={cat.id}
                                     onClick={() => handleCatClick(cat.id)}
-                                    className={`w-full text-left rtl:text-right px-4 py-3 rounded-lg text-sm font-medium transition-colors flex justify-between items-center group ${selectedCat === cat.id ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'hover:bg-gray-50 text-gray-600'
+                                    className={`w-full text-left rtl:text-right px-4 py-3 rounded-lg text-sm font-medium transition-colors flex justify-between items-center group cursor-pointer ${selectedCat === cat.id ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'hover:bg-gray-50 text-gray-600'
                                         }`}
                                 >
                                     <span>{getName(cat)}</span>
@@ -322,8 +334,14 @@ const MenuBuilder: React.FC = () => {
                                         >
                                             <Edit className="w-3 h-3 text-gray-500" />
                                         </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat); }}
+                                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-100 rounded"
+                                        >
+                                            <Trash2 className="w-3 h-3 text-red-500" />
+                                        </button>
                                     </div>
-                                </button>
+                                </div>
                             ))}
                             {categories.length === 0 && !loading && (
                                 <div className="text-center text-gray-400 p-4 text-sm">
@@ -559,6 +577,20 @@ const MenuBuilder: React.FC = () => {
                                                     </button>
                                                 </div>
                                             )}
+                                        </div>
+
+                                        {/* GLOBAL ACTIVE TOGGLE */}
+                                        <div className="flex items-center gap-3 pt-2">
+                                            <input
+                                                type="checkbox"
+                                                name="is_active"
+                                                id="item_is_active"
+                                                defaultChecked={editingItem?.is_active !== false}
+                                                className="w-4 h-4 text-green-600 rounded"
+                                            />
+                                            <label htmlFor="item_is_active" className="text-sm text-gray-700">
+                                                {language === 'ar' ? 'نشط (ظاهر في الموقع)' : 'Active (visible on website)'}
+                                            </label>
                                         </div>
                                     </div>
 

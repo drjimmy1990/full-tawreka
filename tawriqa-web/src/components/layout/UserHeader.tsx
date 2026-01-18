@@ -40,7 +40,7 @@ export default function UserHeader({ variant = 'default' }: UserHeaderProps) {
                 }
             }
         },
-        { key: 'menu', action: () => navigate('/location?redirect=menu') },
+        { key: 'menu', action: () => navigate('/location?redirect=menu&mode=pickup') },
         { key: 'branches', action: () => navigate('/branches') },
         { key: 'about', action: () => navigate('/about') },
         { key: 'contact_us', action: () => scrollTo('contact') }

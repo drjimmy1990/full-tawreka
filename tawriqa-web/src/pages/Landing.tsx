@@ -70,7 +70,7 @@ export default function Landing() {
                         <Button
                             variant="outline" // Used outline but with white text handling manually below
                             size="lg"
-                            onClick={() => navigate('/location?redirect=menu')}
+                            onClick={() => navigate('/location?redirect=menu&mode=pickup')}
                             className="min-w-[200px] border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm bg-white/5"
                             rightIcon={<UtensilsCrossed className="w-5 h-5" />}
                         >

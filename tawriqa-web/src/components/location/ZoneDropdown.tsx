@@ -57,23 +57,36 @@ export default function ZoneDropdown({ onSelect }: ZoneDropdownProps) {
                     <div key={group}>
                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-1">{group}</h3>
                         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                            {groupedZones[group].map((zone, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => onSelect(zone)}
-                                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition-colors text-start"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <MapPin className="w-4 h-4 text-primary" />
-                                        <span className="text-sm font-medium text-gray-700">{zone.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xs font-bold bg-green-50 text-green-700 px-2 py-1 rounded">
-                                            {zone.delivery_fee} {t('common.currency')}
-                                        </span>
-                                    </div>
-                                </button>
-                            ))}
+                            {groupedZones[group].map((zone, idx) => {
+                                const isAvailable = (zone as any).is_available !== false;
+                                return (
+                                    <button
+                                        key={idx}
+                                        onClick={() => isAvailable && onSelect(zone)}
+                                        disabled={!isAvailable}
+                                        className={`w-full flex items-center justify-between p-3 border-b border-gray-50 last:border-0 transition-colors text-start ${isAvailable
+                                                ? 'hover:bg-gray-50 cursor-pointer'
+                                                : 'bg-gray-50 opacity-60 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <MapPin className={`w-4 h-4 ${isAvailable ? 'text-primary' : 'text-gray-400'}`} />
+                                            <span className={`text-sm font-medium ${isAvailable ? 'text-gray-700' : 'text-gray-400'}`}>{zone.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {isAvailable ? (
+                                                <span className="text-xs font-bold bg-green-50 text-green-700 px-2 py-1 rounded">
+                                                    {zone.delivery_fee} {t('common.currency')}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs font-bold bg-red-50 text-red-600 px-2 py-1 rounded">
+                                                    {t('location.delivery_unavailable')}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 ))}
