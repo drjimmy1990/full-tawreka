@@ -1,6 +1,8 @@
-# Tawreka Full Deployment Guide - aaPanel (Ubuntu VPS)
+# Tawreka Full Deployment Guide v2.0 - aaPanel (Ubuntu VPS)
 
-This guide covers deploying all 3 components of the Tawreka restaurant platform on an Ubuntu VPS with aaPanel.
+Complete guide for deploying the Tawreka restaurant platform, including fresh deployment, redeployment, and self-hosted Supabase options.
+
+---
 
 ## 📋 Project Components
 
@@ -10,27 +12,67 @@ This guide covers deploying all 3 components of the Tawreka restaurant platform 
 | `tawriqa-web` | Static (React/Vite) | 80/443 | Customer Website |
 | `tawreka-system` | Static (React/Vite) | 80/443 | Admin/Kitchen Panel |
 
-## 🌐 Recommended Domain Structure
+## 🌐 Domain Structure
 
 ```
 tawreka.com          → Customer Website (tawriqa-web)
 kitchen.tawreka.com  → Admin Panel (tawreka-system)
 api.tawreka.com      → Backend API (backend-api)
+supabase.tawreka.com → Self-hosted Supabase (optional)
 ```
 
 ---
 
-## 📦 Prerequisites
+# 🧹 PART 0: Stop and Delete Existing Deployment
 
-### 1. Install Required aaPanel Software
+> **Run these commands BEFORE redeploying to ensure a clean slate.**
+
+## 0.1 Stop and Delete Backend API
+
+```bash
+# Check current running apps
+npx pm2 list
+
+# Stop the backend
+npx pm2 stop tawreka-api
+
+# Delete from PM2
+npx pm2 delete tawreka-api
+
+# Save the new PM2 state (no apps)
+npx pm2 save
+
+# Optional: Remove all files
+rm -rf /www/wwwroot/api.tawreka.com/*
+```
+
+## 0.2 Delete Website in aaPanel
+
+1. Go to **aaPanel → Website**
+2. Click on `api.tawreka.com` → **Delete** → Check "Delete site files" → Confirm
+3. Repeat for `tawreka.com` and `kitchen.tawreka.com` if needed
+
+## 0.3 Clear Node.js Cache (Optional)
+
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Remove global npm modules (if any)
+rm -rf ~/.npm
+```
+
+---
+
+# 📦 PART 1: Prerequisites
+
+## 1.1 Install Required aaPanel Software
 In aaPanel → App Store, install:
 - ✅ **Nginx** (Latest)
+- ✅ **Docker** (for self-hosted Supabase)
 
-### 2. SSH Access
-You need SSH access to upload files and run commands.
+## 1.2 Install Node.js
 
-### 3. Install Node.js (Required)
-Use the `n` Node version manager (tested and working):
 ```bash
 # Download and install n and Node.js
 curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash
@@ -39,52 +81,55 @@ curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-in
 source ~/.bashrc
 
 # Verify installation
-node -v  # Should print v24.x.x or similar
-npm -v   # Should print 11.x.x or similar
+node -v  # Should print v24.x.x
+npm -v   # Should print 11.x.x
 ```
 
 ---
 
-## 🚀 PART 1: Deploy Backend API (Node.js)
+# 🚀 PART 2: Deploy Backend API (Fresh Install)
 
-### Step 1: Create Node Project Directory
+## 2.1 Create Project Directory
+
 ```bash
 mkdir -p /www/wwwroot/api.tawreka.com
 cd /www/wwwroot/api.tawreka.com
 ```
 
-### Step 2: Upload Backend Code
-Option A - Git Clone:
+## 2.2 Upload Backend Code
+
+**Option A - Git Clone:**
 ```bash
-git clone https://github.com/drjimmy1990/full-tawreka.git temp
+git clone https://github.com/YOUR_USER/full-tawreka.git temp
 mv temp/backend-api/* .
 rm -rf temp
 ```
 
-Option B - Upload via aaPanel Files:
+**Option B - Upload via aaPanel Files:**
 1. Go to aaPanel → Files
 2. Navigate to `/www/wwwroot/api.tawreka.com`
 3. Upload `backend-api` folder contents
 
-### Step 3: Install Dependencies
+## 2.3 Install Dependencies
+
 ```bash
 cd /www/wwwroot/api.tawreka.com
 npm install
 ```
 
-### Step 4: Create Production Environment File
-Create `.env` file:
+## 2.4 Create Environment File
+
 ```bash
 nano /www/wwwroot/api.tawreka.com/.env
 ```
 
-Add these variables:
+### For Cloud Supabase:
 ```env
 # Server
 PORT=4001
 NODE_ENV=production
 
-# Supabase
+# Supabase Cloud
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_SERVICE_KEY=YOUR_SERVICE_KEY
 
@@ -93,69 +138,81 @@ PAYMOB_API_KEY=YOUR_PAYMOB_API_KEY
 PAYMOB_INTEGRATION_ID=YOUR_INTEGRATION_ID
 PAYMOB_IFRAME_ID=YOUR_IFRAME_ID
 
-# CORS - Add your domains
+# CORS
 ALLOWED_ORIGINS=https://tawreka.com,https://kitchen.tawreka.com
 
 # API Security
 API_KEY=YOUR_SECURE_API_KEY
 ```
 
-### Step 5: Build TypeScript
+### For Self-Hosted Supabase:
+```env
+# Server
+PORT=4001
+NODE_ENV=production
+
+# Self-Hosted Supabase
+SUPABASE_URL=https://supabase.tawreka.com
+SUPABASE_SERVICE_KEY=YOUR_SELF_HOSTED_SERVICE_KEY
+
+# Paymob Egypt
+PAYMOB_API_KEY=YOUR_PAYMOB_API_KEY
+PAYMOB_INTEGRATION_ID=YOUR_INTEGRATION_ID
+PAYMOB_IFRAME_ID=YOUR_IFRAME_ID
+
+# CORS
+ALLOWED_ORIGINS=https://tawreka.com,https://kitchen.tawreka.com
+
+# API Security
+API_KEY=YOUR_SECURE_API_KEY
+```
+
+## 2.5 Build TypeScript
+
 ```bash
 npm run build
 ```
 
-### Step 6: Start with PM2 (Process Manager)
-Use `npx` to run PM2 (avoids global path issues):
+## 2.6 Start with PM2
+
 ```bash
 # Start the API
 npx pm2 start dist/index.js --name "tawreka-api"
 
-# Save process list for auto-restart
+# Save for auto-restart
 npx pm2 save
 
-# Configure PM2 to start on server reboot
+# Configure startup on reboot
 npx pm2 startup
+# Copy and run the command it outputs!
 ```
 
-> **Note**: After running `pm2 startup`, copy and run the command it outputs to enable auto-start.
-
-### PM2 Management Commands
+### PM2 Commands Reference
 ```bash
-# Check status
-npx pm2 status
-
-# View logs
-npx pm2 logs tawreka-api
-
-# Restart the API
-npx pm2 restart tawreka-api
-
-# Stop the API
-npx pm2 stop tawreka-api
-
-# Delete from PM2 (stops and removes)
-npx pm2 delete tawreka-api
-
-# Monitor in real-time
-npx pm2 monit
+npx pm2 status           # Check status
+npx pm2 logs tawreka-api # View logs
+npx pm2 restart tawreka-api # Restart
+npx pm2 stop tawreka-api    # Stop
+npx pm2 delete tawreka-api  # Delete
+npx pm2 monit            # Real-time monitor
 ```
 
-### Step 7: Create Website in aaPanel for API
-1. Go to **aaPanel → Website → Add Site**
-2. Configure:
-   - **Domain**: `api.tawreka.com`
-   - **PHP Version**: Pure Static (no PHP)
-   - **Create Database**: No
+## 2.7 Configure aaPanel Website for API
 
-### Step 8: Configure Reverse Proxy for API
-1. Click on `api.tawreka.com` site → **Reverse Proxy**
-2. Add new proxy:
-   - **Name**: `nodejs`
-   - **Target URL**: `http://127.0.0.1:4001`
-   - **Send Domain**: `$host`
+1. **aaPanel → Website → Add Site**
+2. Domain: `api.tawreka.com`
+3. PHP Version: **Pure Static**
+4. Create Database: **No**
 
-Or manually edit Nginx config:
+## 2.8 Configure Reverse Proxy
+
+1. Click `api.tawreka.com` → **Reverse Proxy**
+2. Add:
+   - Name: `nodejs`
+   - Target URL: `http://127.0.0.1:4001`
+   - Send Domain: `$host`
+
+**Or manually edit Nginx config:**
 ```nginx
 location / {
     proxy_pass http://127.0.0.1:4001;
@@ -170,25 +227,17 @@ location / {
 }
 ```
 
-### Step 9: Enable SSL for API
+## 2.9 Enable SSL
+
 1. Go to `api.tawreka.com` → **SSL**
-2. Click **Let's Encrypt** → Issue Certificate
+2. Click **Let's Encrypt** → Issue
 3. Enable **Force HTTPS**
 
 ---
 
-## 🍽️ PART 2: Deploy Customer Website (tawriqa-web)
+# 🍽️ PART 3: Deploy Customer Website (tawriqa-web)
 
-### Step 1: Build Locally
-On your development machine:
-```bash
-cd tawriqa-web
-npm run build
-```
-
-This creates a `dist` folder with static files.
-
-### Step 2: Update Environment for Production
+## 3.1 Update Environment Locally
 Before building, update `.env`:
 ```env
 VITE_API_URL=https://api.tawreka.com
@@ -196,204 +245,269 @@ VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY
 ```
 
-### Step 3: Create Website in aaPanel
-1. Go to **aaPanel → Website → Add Site**
-2. Configure:
-   - **Domain**: `tawreka.com` and `www.tawreka.com`
-   - **Root Directory**: `/www/wwwroot/tawreka.com`
-   - **PHP Version**: Pure Static
+> **For Self-Hosted Supabase:** Replace with `https://supabase.tawreka.com`
 
-### Step 4: Upload Built Files
-Upload the contents of `dist/` folder to `/www/wwwroot/tawreka.com/`
+## 3.2 Build Locally
 
-Option A - Via aaPanel Files:
-1. aaPanel → Files → Navigate to `/www/wwwroot/tawreka.com/`
-2. Upload all files from `dist/` folder
-
-Option B - Via SCP:
 ```bash
-scp -r dist/* root@YOUR_VPS_IP:/www/wwwroot/tawreka.com/
-```
-
-### Step 5: Configure SPA Routing (IMPORTANT!)
-Since this is a React SPA, all routes should return `index.html`.
-
-1. Go to `tawreka.com` site → **URL Rewrite**
-2. Add this rule:
-```nginx
-location / {
-    try_files $uri $uri/ /index.html;
-}
-```
-
-Or edit the site's Nginx config and add inside the `server` block:
-```nginx
-location / {
-    root /www/wwwroot/tawreka.com;
-    index index.html;
-    try_files $uri $uri/ /index.html;
-}
-```
-
-### Step 6: Enable SSL
-1. Go to `tawreka.com` → **SSL**
-2. Issue Let's Encrypt certificate for both `tawreka.com` and `www.tawreka.com`
-3. Enable **Force HTTPS**
-
----
-
-## 🍳 PART 3: Deploy Admin/Kitchen Panel (tawreka-system)
-
-### Step 1: Build Locally
-On your development machine:
-```bash
-cd tawreka-system
+cd tawriqa-web
 npm run build
 ```
 
-### Step 2: Update Environment for Production
-Before building, verify `.env`:
-```env
-VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY
-```
+## 3.3 Create Website in aaPanel
 
-### Step 3: Create Website in aaPanel
-1. Go to **aaPanel → Website → Add Site**
-2. Configure:
-   - **Domain**: `kitchen.tawreka.com`
-   - **Root Directory**: `/www/wwwroot/kitchen.tawreka.com`
-   - **PHP Version**: Pure Static
+1. **aaPanel → Website → Add Site**
+2. Domain: `tawreka.com` and `www.tawreka.com`
+3. Root: `/www/wwwroot/tawreka.com`
+4. PHP: **Pure Static**
 
-### Step 4: Upload Built Files
-Upload the contents of `dist/` folder to `/www/wwwroot/kitchen.tawreka.com/`
+## 3.4 Upload Files
 
-### Step 5: Configure SPA Routing
-Same as customer website - add URL rewrite:
+Upload `dist/` folder contents to `/www/wwwroot/tawreka.com/`
+
+## 3.5 Configure SPA Routing
+
+Add to Nginx config or URL Rewrite:
 ```nginx
 location / {
     try_files $uri $uri/ /index.html;
 }
 ```
 
-### Step 6: Enable SSL
-1. Go to `kitchen.tawreka.com` → **SSL**
-2. Issue Let's Encrypt certificate
-3. Enable **Force HTTPS**
+## 3.6 Enable SSL
+
+1. SSL → Let's Encrypt (for both `tawreka.com` and `www.tawreka.com`)
+2. Enable **Force HTTPS**
 
 ---
 
-## 🔧 Post-Deployment Configuration
+# 🍳 PART 4: Deploy Admin Panel (tawreka-system)
 
-### 1. Update Paymob Callback URLs
-In your Paymob Dashboard:
-- **Transaction Processed Callback**: `https://your-n8n-webhook-url`
-- **Transaction Response Callback**: `https://tawreka.com/checkout/success`
+Same process as customer website:
 
-### 2. Update Supabase Settings
-In Supabase Dashboard → Settings → API:
-- Add your domains to **Site URL** and **Redirect URLs**
+1. Update `.env` with production Supabase URL
+2. Build: `npm run build`
+3. Create site: `kitchen.tawreka.com`
+4. Upload `dist/` contents
+5. Configure SPA routing
+6. Enable SSL
 
-### 3. Configure CORS in Backend
-Ensure `ALLOWED_ORIGINS` in backend `.env` includes all your domains:
-```env
-ALLOWED_ORIGINS=https://tawreka.com,https://www.tawreka.com,https://kitchen.tawreka.com
+---
+
+# 🛠️ PART 5: Self-Hosted Supabase Deployment (Optional)
+
+> Use this if you want full control of your database instead of Supabase Cloud.
+
+## 5.1 Prerequisites
+
+```bash
+# Install Docker
+apt-get update && apt-get install -y docker.io docker-compose
+
+# Start Docker
+systemctl start docker
+systemctl enable docker
 ```
 
+## 5.2 Clone Supabase Self-Hosted
+
+```bash
+mkdir -p /www/supabase
+cd /www/supabase
+
+# Clone the official Supabase Docker setup
+git clone --depth 1 https://github.com/supabase/supabase.git
+cd supabase/docker
+```
+
+## 5.3 Configure Environment
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+**Key variables to configure:**
+```env
+# Site URL
+SITE_URL=https://supabase.tawreka.com
+API_EXTERNAL_URL=https://supabase.tawreka.com
+
+# JWT Secrets (Generate new ones!)
+JWT_SECRET=your-super-secret-jwt-token-minimum-32-characters
+ANON_KEY=your-anon-key
+SERVICE_ROLE_KEY=your-service-role-key
+
+# Database
+POSTGRES_PASSWORD=your-secure-db-password
+
+# Studio (Admin Dashboard)
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=your-dashboard-password
+```
+
+### Generate JWT Keys
+```bash
+# Generate a random JWT secret
+openssl rand -base64 32
+
+# Use the official Supabase key generator
+# https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys
+```
+
+## 5.4 Start Supabase
+
+```bash
+cd /www/supabase/supabase/docker
+docker-compose up -d
+```
+
+### Check Status
+```bash
+docker-compose ps
+```
+
+All containers should be "Up".
+
+## 5.5 Configure aaPanel Reverse Proxy for Supabase
+
+1. **aaPanel → Website → Add Site**
+2. Domain: `supabase.tawreka.com`
+3. PHP: **Pure Static**
+
+4. Configure **Reverse Proxy**:
+   - Name: `supabase`
+   - Target URL: `http://127.0.0.1:8000`
+
+**Or manually add to Nginx:**
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+}
+```
+
+5. Enable SSL for `supabase.tawreka.com`
+
+## 5.6 Update Application Environment Files
+
+**Backend API `.env`:**
+```env
+SUPABASE_URL=https://supabase.tawreka.com
+SUPABASE_SERVICE_KEY=YOUR_SELF_HOSTED_SERVICE_ROLE_KEY
+```
+
+**tawriqa-web `.env`:**
+```env
+VITE_SUPABASE_URL=https://supabase.tawreka.com
+VITE_SUPABASE_ANON_KEY=YOUR_SELF_HOSTED_ANON_KEY
+```
+
+**tawreka-system `.env`:**
+```env
+VITE_SUPABASE_URL=https://supabase.tawreka.com
+VITE_SUPABASE_ANON_KEY=YOUR_SELF_HOSTED_ANON_KEY
+```
+
+## 5.7 Import Database Schema
+
+Access Supabase Studio at `https://supabase.tawreka.com` and run the SQL schema from `tawreka-system/supabase.sql`.
+
 ---
 
-## 🔄 Updating Deployments
+# 🔄 PART 6: Updating Existing Deployment
 
-### Update Backend API
+## Update Backend API
+
 ```bash
 cd /www/wwwroot/api.tawreka.com
+
+# Stop current version
+npx pm2 stop tawreka-api
+
 # Upload new files or git pull
+# git pull origin main
+
+# Install dependencies
 npm install
+
+# Rebuild
 npm run build
+
+# Restart
 npx pm2 restart tawreka-api
 ```
 
-### Update Frontend Sites
+## Update Frontend Sites
+
 1. Build locally: `npm run build`
-2. Upload new `dist/` contents to the server
-3. Clear browser cache
+2. Delete old files on server:
+   ```bash
+   rm -rf /www/wwwroot/tawreka.com/*
+   ```
+3. Upload new `dist/` contents
+4. Clear browser cache (Ctrl+Shift+R)
 
 ---
 
-## 🐛 Troubleshooting
+# 🐛 PART 7: Troubleshooting
 
-### Backend API Not Starting
+## Backend Not Starting
 ```bash
 # Check logs
 npx pm2 logs tawreka-api
 
-# Check if port is in use
+# Check port usage
 netstat -tlnp | grep 4001
 
-# Restart
-npx pm2 restart tawreka-api
-
-# Stop the API
-npx pm2 stop tawreka-api
-
-# Delete and recreate
+# Restart everything
 npx pm2 delete tawreka-api
 npx pm2 start dist/index.js --name "tawreka-api"
 ```
 
-### 502 Bad Gateway
-- Check if Node.js app is running: `pm2 status`
-- Check Nginx reverse proxy configuration
-- Check if correct port is configured
+## 502 Bad Gateway
+- Check if Node.js is running: `npx pm2 status`
+- Check reverse proxy config
+- Verify port 4001 is correct
 
-### CORS Errors
-- Verify `ALLOWED_ORIGINS` in backend `.env`
-- Ensure API URL in frontend `.env` uses HTTPS
+## CORS Errors
+- Check `ALLOWED_ORIGINS` in backend `.env`
+- Ensure frontend uses HTTPS API URL
 
-### SPA Routes Return 404
-- Add `try_files $uri $uri/ /index.html;` to Nginx config
-- Restart Nginx: `nginx -t && nginx -s reload`
-
-### SSL Certificate Issues
-- Ensure domain DNS points to VPS IP
-- Wait for DNS propagation (up to 24 hours)
-- Try issuing certificate again in aaPanel
-
----
-
-## 📊 Monitoring & Management
-
-### Check Application Status
+## SPA Routes Return 404
 ```bash
-npx pm2 status
-npx pm2 monit
-```
-
-### View Logs
-```bash
-# Backend API logs
-npx pm2 logs tawreka-api
-
-# Nginx access logs
-tail -f /www/wwwlogs/api.tawreka.com.log
-tail -f /www/wwwlogs/tawreka.com.log
-```
-
-### Restart Services
-```bash
-# Restart Node app
-npx pm2 restart tawreka-api
-
-# Stop Node app
-npx pm2 stop tawreka-api
+# Add to Nginx config
+location / {
+    try_files $uri $uri/ /index.html;
+}
 
 # Restart Nginx
-nginx -s reload
+nginx -t && nginx -s reload
+```
+
+## Self-Hosted Supabase Issues
+```bash
+# Check container logs
+cd /www/supabase/supabase/docker
+docker-compose logs -f
+
+# Restart all containers
+docker-compose restart
+
+# Full reset
+docker-compose down
+docker-compose up -d
 ```
 
 ---
 
-## 📁 Final Directory Structure
+# 📁 Final Directory Structure
 
 ```
 /www/wwwroot/
@@ -405,26 +519,38 @@ nginx -s reload
 │
 ├── tawreka.com/              # Customer Website (Static)
 │   ├── index.html
-│   ├── assets/
-│   └── ...
+│   └── assets/
 │
-└── kitchen.tawreka.com/      # Admin Panel (Static)
-    ├── index.html
-    ├── assets/
-    └── ...
+├── kitchen.tawreka.com/      # Admin Panel (Static)
+│   ├── index.html
+│   └── assets/
+│
+/www/supabase/ (Optional)
+└── supabase/docker/          # Self-hosted Supabase
+    ├── docker-compose.yml
+    └── .env
 ```
 
 ---
 
-## ✅ Deployment Checklist
+# ✅ Deployment Checklist
 
+## Cloud Supabase
+- [ ] Stopped/deleted old deployments
 - [ ] Backend API running on PM2
 - [ ] API reverse proxy configured
-- [ ] Customer website deployed with SPA routing
-- [ ] Admin panel deployed with SPA routing
-- [ ] SSL certificates issued for all domains
+- [ ] Customer website with SPA routing
+- [ ] Admin panel with SPA routing
+- [ ] SSL certificates for all domains
 - [ ] Environment variables configured
-- [ ] Paymob callback URLs updated
-- [ ] CORS configured for all domains
-- [ ] Tested order flow end-to-end
-- [ ] Kitchen alerts working with Supabase Realtime
+- [ ] CORS configured
+- [ ] Tested order flow
+
+## Self-Hosted Supabase (Additional)
+- [ ] Docker installed
+- [ ] Supabase containers running
+- [ ] Supabase reverse proxy configured
+- [ ] SSL for supabase subdomain
+- [ ] JWT keys generated and configured
+- [ ] Database schema imported
+- [ ] All apps using self-hosted URLs

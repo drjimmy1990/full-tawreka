@@ -1007,3 +1007,7 @@ ADD COLUMN IF NOT EXISTS is_delivery_available BOOLEAN DEFAULT TRUE;
 
 -- Comment
 COMMENT ON COLUMN public.branches.is_delivery_available IS 'If false, delivery service is suspended for this branch (Pickup only)';
+
+ALTER TABLE public.branches
+ADD COLUMN IF NOT EXISTS name_ru TEXT,
+ADD COLUMN IF NOT EXISTS address_ru TEXT;

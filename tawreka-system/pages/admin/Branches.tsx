@@ -14,6 +14,8 @@ const Branches: React.FC = () => {
   const [jsonError, setJsonError] = useState('');
   const [importMode, setImportMode] = useState(false);
   const [rawGeoJson, setRawGeoJson] = useState('');
+  const [importZoneName, setImportZoneName] = useState('');
+  const [importDeliveryFee, setImportDeliveryFee] = useState(15);
 
   const { t } = useI18n();
 
@@ -106,10 +108,10 @@ const Branches: React.FC = () => {
       // Egypt Lat is ~22-32, Lng is ~24-37. 
       // If we see Lat > 33, maybe it wasn't swapped? (Just a sanity check logic comment)
 
-      // 3. Create Zone
+      // 3. Create Zone with user-provided values
       const newZone: Zone = {
-        name: `Imported Zone ${new Date().toLocaleTimeString()}`,
-        delivery_fee: 15,
+        name: importZoneName.trim() || `Imported Zone ${new Date().toLocaleTimeString()}`,
+        delivery_fee: importDeliveryFee,
         polygon: convertedPolygon
       };
 
@@ -126,6 +128,8 @@ const Branches: React.FC = () => {
       setZonesJson(JSON.stringify(updatedZones, null, 2));
       setImportMode(false);
       setRawGeoJson('');
+      setImportZoneName('');
+      setImportDeliveryFee(15);
       alert("Zone imported! Coordinates swapped (GeoJSON Lon,Lat -> App Lat,Lng).");
 
     } catch (e: any) {
@@ -283,6 +287,31 @@ const Branches: React.FC = () => {
                 <div className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
                   <h4 className="text-sm font-bold text-indigo-800 mb-2">Paste GeoJSON Coordinates</h4>
                   <p className="text-xs text-indigo-600 mb-2">Paste the array starting with <code>[[[...]]]</code>. We will convert Longitude/Latitude automatically.</p>
+
+                  {/* Zone Name & Delivery Fee Inputs */}
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-indigo-700 mb-1">Zone Name</label>
+                      <input
+                        type="text"
+                        value={importZoneName}
+                        onChange={(e) => setImportZoneName(e.target.value)}
+                        className="w-full text-sm p-2 border rounded"
+                        placeholder="e.g. المعادي / Maadi"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-indigo-700 mb-1">Delivery Fee</label>
+                      <input
+                        type="number"
+                        value={importDeliveryFee}
+                        onChange={(e) => setImportDeliveryFee(Number(e.target.value))}
+                        className="w-full text-sm p-2 border rounded"
+                        placeholder="15"
+                      />
+                    </div>
+                  </div>
+
                   <textarea
                     value={rawGeoJson}
                     onChange={(e) => setRawGeoJson(e.target.value)}

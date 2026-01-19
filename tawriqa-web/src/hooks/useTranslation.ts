@@ -134,6 +134,7 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'رجوع',
         'common.currency': 'ج.م',
         'common.minutes': 'دقيقة',
+        'common.no_data': 'لا توجد بيانات',
 
         // Footer
         'footer.quick_links': 'روابط سريعة',
@@ -287,6 +288,7 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'Back',
         'common.currency': 'EGP',
         'common.minutes': 'min',
+        'common.no_data': 'No data available',
 
         // Footer
         'footer.quick_links': 'Quick Links',
