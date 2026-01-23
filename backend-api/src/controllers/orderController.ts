@@ -351,7 +351,10 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         if (status === 'accepted') updateData.accepted_at = now;
         if (status === 'in_kitchen') updateData.in_kitchen_at = now;
         if (status === 'out_for_delivery') updateData.out_for_delivery_at = now;
-        if (status === 'done') updateData.done_at = now;
+        if (status === 'done') {
+            updateData.done_at = now;
+            updateData.payment_status = 'paid';
+        }
 
         if (status === 'cancelled') {
             updateData.cancelled_at = now;

@@ -187,7 +187,7 @@ export default function Checkout() {
                         <h1 className="font-bold text-gray-800 text-lg">{t('checkout.secure_payment')}</h1>
                         <p className="text-xs text-gray-400">{t('checkout.order_number')} #{orderId}</p>
                     </div>
-                    <img src="/assets/images/logo.avif" alt={brandName} className="h-10 w-10 rounded-full object-cover" />
+                    <img src="/assets/images/logo.avif" alt={brandName} className="h-10 w-10 rounded-xl object-contain" />
                 </header>
 
                 <div className="flex-1 bg-white">
@@ -206,7 +206,7 @@ export default function Checkout() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-6">
                 <div className="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-md w-full animate-scale-in">
-                    <img src="/assets/images/logo.avif" alt={brandName} className="w-20 h-20 rounded-full mx-auto mb-4 shadow-lg object-cover" />
+                    <img src="/assets/images/logo.avif" alt={brandName} className="w-20 h-20 rounded-2xl mx-auto mb-4 object-contain" />
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
                         <CheckCircle className="w-10 h-10" />
                     </div>
@@ -243,7 +243,7 @@ export default function Checkout() {
                         <h1 className="font-bold text-gray-800 text-lg">{t('checkout.title')}</h1>
                         <p className="text-xs text-gray-400">{items.length} منتج</p>
                     </div>
-                    <img src="/assets/images/logo.avif" alt={brandName} className="h-10 w-10 rounded-full object-cover shadow-md" />
+                    <img src="/assets/images/logo.avif" alt={brandName} className="h-10 w-10 rounded-xl object-contain" />
                 </div>
             </header>
 

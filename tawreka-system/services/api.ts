@@ -241,17 +241,20 @@ export const api = {
     const { data: orders, error } = await query;
     if (error || !orders) return {
       totalRevenue: 0, totalOrders: 0, avgDeliveryTime: 0, avgOrderValue: 0,
-      revenuePerBranch: [], ordersPerHour: [], ordersByStatus: [], topItems: []
+      revenuePerBranch: [], ordersPerHour: [], ordersByStatus: [], topItems: [], salesByCategory: []
     };
 
-    const validOrders = orders.filter((o: any) => o.status !== 'cancelled');
+    const validOrders = orders.filter((o: any) =>
+      o.status !== 'cancelled' &&
+      (o.payment_status === 'paid' || o.status === 'done')
+    );
     const totalRevenue = validOrders.reduce((sum: number, o: any) => sum + (o.total_price || 0), 0);
-    const totalOrders = orders.length;
+    const totalOrders = validOrders.length;
     const avgOrderValue = validOrders.length > 0 ? totalRevenue / validOrders.length : 0;
 
     // Calculate orders per hour
     const hourCounts: { [hour: string]: number } = {};
-    orders.forEach((order: any) => {
+    validOrders.forEach((order: any) => {
       const hour = new Date(order.created_at).getHours();
       const hourKey = `${hour}:00`;
       hourCounts[hourKey] = (hourCounts[hourKey] || 0) + 1;
@@ -271,7 +274,7 @@ export const api = {
       cancelled: '#EF4444'
     };
     const ordersByStatus = Object.entries(
-      orders.reduce((acc: any, order: any) => {
+      validOrders.reduce((acc: any, order: any) => {
         acc[order.status] = (acc[order.status] || 0) + 1;
         return acc;
       }, {})
@@ -281,24 +284,65 @@ export const api = {
       color: statusColors[name] || '#6B7280'
     }));
 
-    // Calculate top items
+    // --- FETCH METADATA FOR CATEGORY ANALYSIS ---
+    const { data: menuItems } = await supabase.from('menu_items').select('id, category_id, name_en, name_ar');
+    const { data: categories } = await supabase.from('menu_categories').select('id, name_en, name_ar');
+
+    // Create Lookups
+    const itemCatMap = new Map(); // item_id -> category_id
+    const itemNameMap = new Map(); // name -> category_id (fallback)
+    if (menuItems) {
+      menuItems.forEach((m: any) => {
+        itemCatMap.set(m.id, m.category_id);
+        itemNameMap.set(m.name_en, m.category_id);
+        itemNameMap.set(m.name_ar, m.category_id);
+      });
+    }
+    const catNameMap = new Map(); // category_id -> name
+    if (categories) {
+      categories.forEach((c: any) => catNameMap.set(c.id, c.name_en || c.name_ar));
+    }
+
+    // Calculate Top Items & Category Sales
     const itemCounts: { [name: string]: { sales: number; revenue: number } } = {};
+    const categorySales: { [catName: string]: number } = {};
+
     validOrders.forEach((order: any) => {
       if (order.items && Array.isArray(order.items)) {
         order.items.forEach((item: any) => {
           const name = item.name || 'Unknown Item';
+          const qty = item.qty || 1;
+          const revenue = (item.price || 0) * qty;
+
+          // 1. Top Items
           if (!itemCounts[name]) {
             itemCounts[name] = { sales: 0, revenue: 0 };
           }
-          itemCounts[name].sales += item.qty || 1;
-          itemCounts[name].revenue += (item.price || 0) * (item.qty || 1);
+          itemCounts[name].sales += qty;
+          itemCounts[name].revenue += revenue;
+
+          // 2. Category Sales
+          let catId = item.item_id ? itemCatMap.get(item.item_id) : undefined;
+          if (!catId) catId = itemNameMap.get(name); // Fallback to name match
+
+          const catName = catId ? catNameMap.get(catId) : 'Uncategorized';
+          categorySales[catName] = (categorySales[catName] || 0) + revenue;
         });
       }
     });
+
     const topItems = Object.entries(itemCounts)
       .map(([name, data]) => ({ name, ...data }))
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10);
+
+    const salesByCategory = Object.entries(categorySales)
+      .map(([name, value], idx) => ({
+        name,
+        value,
+        color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1'][idx % 7]
+      }))
+      .sort((a, b) => b.value - a.value);
 
     // Calculate revenue per branch
     const branchRevenue: { [branchName: string]: number } = {};
@@ -319,7 +363,8 @@ export const api = {
       revenuePerBranch,
       ordersPerHour,
       ordersByStatus,
-      topItems
+      topItems,
+      salesByCategory
     };
   },
 

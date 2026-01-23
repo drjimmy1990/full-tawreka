@@ -104,4 +104,5 @@ export interface AnalyticsData {
   ordersPerHour: { hour: string; count: number }[];
   ordersByStatus: { name: string; value: number; color: string }[];
   topItems: { name: string; sales: number; revenue: number }[];
+  salesByCategory: { name: string; value: number; color: string }[];
 }

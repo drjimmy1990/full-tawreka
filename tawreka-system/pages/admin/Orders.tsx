@@ -9,6 +9,7 @@ const Orders: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterPayment, setFilterPayment] = useState<string>('ALL');
   const [dateRange, setDateRange] = useState<{ start: string, end: string }>({ start: '', end: '' });
   const { t } = useI18n();
 
@@ -57,7 +58,17 @@ const Orders: React.FC = () => {
       if (new Date(order.created_at).getTime() > end) matchesDate = false;
     }
 
-    return matchesSearch && matchesStatus && matchesDate;
+    let matchesPayment = true;
+    if (filterPayment !== 'ALL') {
+      const pm = (order.payment_method || 'cash').toLowerCase();
+      if (filterPayment === 'card') {
+        matchesPayment = pm.includes('card');
+      } else {
+        matchesPayment = pm === filterPayment;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDate && matchesPayment;
   });
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -125,6 +136,19 @@ const Orders: React.FC = () => {
               </select>
             </div>
 
+            {/* Payment Filter */}
+            <div className="relative min-w-[140px]">
+              <select
+                className="w-full ltr:pl-4 ltr:pr-4 rtl:pr-4 rtl:pl-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 appearance-none shadow-sm cursor-pointer hover:bg-white transition-colors"
+                value={filterPayment}
+                onChange={e => setFilterPayment(e.target.value)}
+              >
+                <option value="ALL">{t('filter.all_payments') || 'All Payments'}</option>
+                <option value="cash">{t('checkout.cash') || 'Cash'}</option>
+                <option value="card">{t('checkout.card') || 'Card'}</option>
+              </select>
+            </div>
+
             {/* Date Filters */}
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -169,6 +193,7 @@ const Orders: React.FC = () => {
               <th className="px-6 py-4">Customer Info</th>
               <th className="px-6 py-4">Address</th>
               <th className="px-6 py-4 text-center">Shipping</th>
+              <th className="px-6 py-4 text-center">Payment</th>
               <th className="px-6 py-4 text-center">Total</th>
               <th className="px-6 py-4 text-center">Status</th>
             </tr>
@@ -204,6 +229,14 @@ const Orders: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 text-gray-700 text-sm font-mono text-center">
                   {order.delivery_fee} {t('common.currency')}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${(order.payment_method || '').includes('card')
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-green-100 text-green-700'
+                    }`}>
+                    {(order.payment_method || 'cash').includes('card') ? '💳 Card' : '💵 Cash'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 font-bold text-gray-900 font-mono text-center text-base">
                   {order.total_price} {t('common.currency')}

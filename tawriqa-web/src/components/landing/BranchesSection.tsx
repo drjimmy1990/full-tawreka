@@ -88,112 +88,136 @@ export default function BranchesSection({ lightTheme = false }: BranchesSectionP
         );
     }
 
+    const getMapUrl = (input?: string) => {
+        if (!input) return null;
+
+        // 1. Try to extract from iframe src="..."
+        const srcMatch = input.match(/src=["'](.*?)["']/);
+        if (srcMatch && srcMatch[1]) {
+            return srcMatch[1];
+        }
+
+        // 2. Otherwise assume it's the raw URL
+        return input;
+    };
+
     return (
         <section id="branches" className={`py-12 ${bgColor}`}>
             <div className="max-w-6xl mx-auto px-6">
                 {/* Branches List */}
                 <div className="space-y-8">
-                    {branches.map((branch) => (
-                        <div
-                            key={branch.id}
-                            className={`rounded-2xl border overflow-hidden hover:shadow-xl transition-all ${cardBg}`}
-                        >
-                            {/* Use flex with explicit ordering for correct visual position */}
-                            <div className="flex flex-col lg:flex-row" dir="ltr">
-                                {/* Map Section - Always first in DOM, use order for visual position */}
-                                {/* Arabic: order-1 (LEFT), English: order-2 (RIGHT) */}
-                                <div className={`h-64 lg:h-80 lg:w-1/2 bg-gray-200 relative ${isArabic ? 'lg:order-1' : 'lg:order-2'}`}>
-                                    {(branch as any).google_maps_embed ? (
-                                        <iframe
-                                            src={(branch as any).google_maps_embed}
-                                            width="100%"
-                                            height="100%"
-                                            style={{ border: 0 }}
-                                            allowFullScreen
-                                            loading="lazy"
-                                            referrerPolicy="no-referrer-when-downgrade"
-                                            title={getBranchName(branch)}
-                                        />
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                                            <MapPin className="w-12 h-12 opacity-30" />
-                                        </div>
-                                    )}
-                                </div>
+                    {branches.map((branch) => {
+                        const rawMapInput = (branch as any).google_maps_embed;
+                        const mapUrl = getMapUrl(rawMapInput);
+                        const isValidMap = mapUrl && mapUrl.includes('google.com/maps/embed');
 
-                                {/* Details Section */}
-                                {/* Arabic: order-2 (RIGHT), English: order-1 (LEFT) */}
-                                <div
-                                    className={`p-6 lg:p-8 lg:w-1/2 flex flex-col justify-center space-y-5 ${isArabic ? 'lg:order-2' : 'lg:order-1'}`}
-                                    dir={isArabic ? 'rtl' : 'ltr'}
-                                >
-                                    {/* Branch Name */}
-                                    <div>
-                                        <h3 className={`text-2xl font-bold mb-2 ${textColor}`}>
-                                            {getBranchName(branch)}
-                                        </h3>
-                                        {getAddress(branch) && (
-                                            <p className={`flex items-center gap-2 ${subTextColor}`}>
-                                                <MapPin className="w-4 h-4 shrink-0 text-primary" />
-                                                {getAddress(branch)}
-                                            </p>
+                        return (
+                            <div
+                                key={branch.id}
+                                className={`rounded-2xl border overflow-hidden hover:shadow-xl transition-all ${cardBg}`}
+                            >
+                                {/* Use flex with explicit ordering for correct visual position */}
+                                <div className="flex flex-col lg:flex-row" dir="ltr">
+                                    {/* Map Section - Always first in DOM, use order for visual position */}
+                                    {/* Arabic: order-1 (LEFT), English: order-2 (RIGHT) */}
+                                    <div className={`h-64 lg:h-80 lg:w-1/2 bg-gray-200 relative ${isArabic ? 'lg:order-1' : 'lg:order-2'}`}>
+                                        {isValidMap ? (
+                                            <iframe
+                                                src={mapUrl}
+                                                width="100%"
+                                                height="100%"
+                                                style={{ border: 0 }}
+                                                allowFullScreen
+                                                loading="lazy"
+                                                referrerPolicy="no-referrer-when-downgrade"
+                                                title={getBranchName(branch)}
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-100">
+                                                <div className="text-center">
+                                                    <MapPin className="w-12 h-12 opacity-30 mx-auto mb-2" />
+                                                    <p className="text-xs opacity-50 px-4">
+                                                        {rawMapInput ? 'Invalid Map URL' : ''}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
 
-                                    {/* Phone */}
-                                    {branch.phone_contact && (
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                                                <Phone className="w-5 h-5 text-primary" />
-                                            </div>
-                                            <div>
-                                                <p className={`text-xs ${labelColor} mb-0.5`}>
-                                                    {t('branches.phone') || 'رقم التليفون'}
+                                    {/* Details Section */}
+                                    {/* Arabic: order-2 (RIGHT), English: order-1 (LEFT) */}
+                                    <div
+                                        className={`p-6 lg:p-8 lg:w-1/2 flex flex-col justify-center space-y-5 ${isArabic ? 'lg:order-2' : 'lg:order-1'}`}
+                                        dir={isArabic ? 'rtl' : 'ltr'}
+                                    >
+                                        {/* Branch Name */}
+                                        <div>
+                                            <h3 className={`text-2xl font-bold mb-2 ${textColor}`}>
+                                                {getBranchName(branch)}
+                                            </h3>
+                                            {getAddress(branch) && (
+                                                <p className={`flex items-center gap-2 ${subTextColor}`}>
+                                                    <MapPin className="w-4 h-4 shrink-0 text-primary" />
+                                                    {getAddress(branch)}
                                                 </p>
-                                                <a
-                                                    href={`tel:${branch.phone_contact}`}
-                                                    className={`text-lg font-bold ${textColor} hover:text-primary transition-colors`}
-                                                    dir="ltr"
-                                                >
-                                                    {branch.phone_contact}
-                                                </a>
-                                            </div>
+                                            )}
                                         </div>
-                                    )}
 
-                                    {/* Working Hours */}
-                                    {(branch.opening_time || branch.closing_time) && (
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center">
-                                                <Clock className="w-5 h-5 text-secondary" />
+                                        {/* Phone */}
+                                        {branch.phone_contact && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                                                    <Phone className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <p className={`text-xs ${labelColor} mb-0.5`}>
+                                                        {t('branches.phone') || 'رقم التليفون'}
+                                                    </p>
+                                                    <a
+                                                        href={`tel:${branch.phone_contact}`}
+                                                        className={`text-lg font-bold ${textColor} hover:text-primary transition-colors`}
+                                                        dir="ltr"
+                                                    >
+                                                        {branch.phone_contact}
+                                                    </a>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className={`text-xs ${labelColor} mb-0.5`}>
-                                                    {t('branches.hours') || 'ساعات العمل'}
-                                                </p>
-                                                <p className={`text-lg font-bold ${textColor}`} dir="ltr">
-                                                    {formatTime(branch.opening_time)} - {formatTime(branch.closing_time)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Directions Button */}
-                                    {(branch as any).google_maps_link && (
-                                        <a
-                                            href={(branch as any).google_maps_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold transition-colors w-fit"
-                                        >
-                                            <Navigation className="w-5 h-5" />
-                                            {t('branches.directions') || 'الاتجاهات'}
-                                        </a>
-                                    )}
+                                        {/* Working Hours */}
+                                        {(branch.opening_time || branch.closing_time) && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center">
+                                                    <Clock className="w-5 h-5 text-secondary" />
+                                                </div>
+                                                <div>
+                                                    <p className={`text-xs ${labelColor} mb-0.5`}>
+                                                        {t('branches.hours') || 'ساعات العمل'}
+                                                    </p>
+                                                    <p className={`text-lg font-bold ${textColor}`} dir="ltr">
+                                                        {formatTime(branch.opening_time)} - {formatTime(branch.closing_time)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Directions Button */}
+                                        {(branch as any).google_maps_link && (
+                                            <a
+                                                href={(branch as any).google_maps_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold transition-colors w-fit"
+                                            >
+                                                <Navigation className="w-5 h-5" />
+                                                {t('branches.directions') || 'الاتجاهات'}
+                                            </a>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </section>

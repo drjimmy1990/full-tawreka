@@ -301,8 +301,8 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Row 3: Top Products & Branch Perf */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Row 3: Top Products, Categories, Branch Perf */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
             <ShoppingBag className="w-5 h-5 mr-2 text-green-500" />
@@ -327,6 +327,54 @@ const Analytics: React.FC = () => {
             )) : (
               <p className="text-center text-gray-400 py-8">No sales data for selected period</p>
             )}
+          </div>
+        </div>
+
+        {/* Sales by Category */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
+            <Package className="w-5 h-5 mr-2 text-purple-500" />
+            {t('analytics.charts.category_sales') || 'Category Sales'}
+          </h3>
+          <div className="h-64 w-full relative" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.salesByCategory}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {data.salesByCategory.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Center Text */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center">
+                <span className="block text-xl font-bold text-gray-800">
+                  {data.salesByCategory.length}
+                </span>
+                <span className="text-xs text-gray-400 uppercase">Cats</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+            {data.salesByCategory.map(cat => (
+              <div key={cat.name} className="flex justify-between items-center text-sm">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: cat.color }}></div>
+                  <span className="text-gray-600 font-medium truncate max-w-[120px]" title={cat.name}>{cat.name}</span>
+                </div>
+                <span className="font-semibold">{cat.value.toLocaleString()}</span>
+              </div>
+            ))}
           </div>
         </div>
 

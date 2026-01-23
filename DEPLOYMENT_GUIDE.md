@@ -204,28 +204,14 @@ npx pm2 monit            # Real-time monitor
 3. PHP Version: **Pure Static**
 4. Create Database: **No**
 
-## 2.8 Configure Reverse Proxy
+## 2.8 Configure Reverse Proxy (aaPanel)
 
 1. Click `api.tawreka.com` → **Reverse Proxy**
 2. Add:
    - Name: `nodejs`
    - Target URL: `http://127.0.0.1:4001`
    - Send Domain: `$host`
-
-**Or manually edit Nginx config:**
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:4001;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_cache_bypass $http_upgrade;
-}
-```
+3. Click **Save**
 
 ## 2.9 Enable SSL
 
@@ -265,14 +251,25 @@ npm run build
 
 Upload `dist/` folder contents to `/www/wwwroot/tawreka.com/`
 
-## 3.5 Configure SPA Routing
+## 3.5 Configure SPA Routing (IMPORTANT - Fixes 404 on Refresh)
 
-Add to Nginx config or URL Rewrite:
+Without this, refreshing any page (like `/menu` or `/location`) returns 404.
+
+1. **aaPanel → Website → tawreka.com**
+2. Click **Config** (Nginx Config tab)
+3. Find the section after `#REWRITE-END` and add:
+
 ```nginx
-location / {
-    try_files $uri $uri/ /index.html;
-}
+    # SPA Routing - React Router
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
 ```
+
+4. Click **Save**
+5. Restart Nginx or click **Apply**
+
+> **Note:** Add this BEFORE the `# Forbidden files or directories` section in the config.
 
 ## 3.6 Enable SSL
 
@@ -375,23 +372,11 @@ All containers should be "Up".
 2. Domain: `supabase.tawreka.com`
 3. PHP: **Pure Static**
 
-4. Configure **Reverse Proxy**:
+4. Configure **Reverse Proxy** (via aaPanel UI):
    - Name: `supabase`
    - Target URL: `http://127.0.0.1:8000`
-
-**Or manually add to Nginx:**
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:8000;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto https;
-}
-```
+   - Send Domain: `$host`
+5. Click **Save**
 
 5. Enable SSL for `supabase.tawreka.com`
 

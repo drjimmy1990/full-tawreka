@@ -12,7 +12,8 @@ const History: React.FC<HistoryProps> = ({ user }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('done');
+  const [filterStatus, setFilterStatus] = useState<string>('active');
+  const [filterPayment, setFilterPayment] = useState<string>('ALL');
   const [dateRange, setDateRange] = useState<{ start: string, end: string }>({ start: '', end: '' });
   const { t } = useI18n();
 
@@ -63,7 +64,17 @@ const History: React.FC<HistoryProps> = ({ user }) => {
       if (new Date(order.created_at).getTime() > end) matchesDate = false;
     }
 
-    return matchesSearch && matchesStatus && matchesDate;
+    let matchesPayment = true;
+    if (filterPayment !== 'ALL') {
+      const pm = (order.payment_method || 'cash').toLowerCase();
+      if (filterPayment === 'card') {
+        matchesPayment = pm.includes('card');
+      } else {
+        matchesPayment = pm === filterPayment;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDate && matchesPayment;
   });
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -132,6 +143,18 @@ const History: React.FC<HistoryProps> = ({ user }) => {
               </select>
             </div>
 
+            <div className="relative min-w-[140px]">
+              <select
+                className="w-full ltr:pl-4 ltr:pr-4 rtl:pr-4 rtl:pl-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 appearance-none shadow-sm cursor-pointer hover:bg-white transition-colors"
+                value={filterPayment}
+                onChange={e => setFilterPayment(e.target.value)}
+              >
+                <option value="ALL">{t('filter.all_payments') || 'All Payments'}</option>
+                <option value="cash">{t('checkout.cash') || 'Cash'}</option>
+                <option value="card">{t('checkout.card') || 'Card'}</option>
+              </select>
+            </div>
+
             <div className="flex items-center gap-2">
               <input
                 type="date"
@@ -168,7 +191,8 @@ const History: React.FC<HistoryProps> = ({ user }) => {
               <th className="px-6 py-4">Date</th>
               <th className="px-6 py-4">Customer</th>
               <th className="px-6 py-4">Address</th>
-              <th className="px-6 py-4 text-center">Total</th>
+              <th className="px-6 py-4">Total</th>
+              <th className="px-6 py-4 text-center">Payment</th>
               <th className="px-6 py-4 text-center">Status</th>
             </tr>
           </thead>
@@ -179,7 +203,15 @@ const History: React.FC<HistoryProps> = ({ user }) => {
                 <td className="px-6 py-4 text-gray-600 text-sm">{new Date(order.created_at).toLocaleDateString()}</td>
                 <td className="px-6 py-4">{order.customer_name}</td>
                 <td className="px-6 py-4 text-gray-600 text-sm max-w-[250px] truncate">{order.address_text || '-'}</td>
-                <td className="px-6 py-4 font-bold text-center">{order.total_price} {t('common.currency')}</td>
+                <td className="px-6 py-4 font-bold">{order.total_price} {t('common.currency')}</td>
+                <td className="px-6 py-4 text-center">
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${(order.payment_method || '').includes('card')
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-green-100 text-green-700'
+                    }`}>
+                    {(order.payment_method || 'cash').includes('card') ? '💳 Card' : '💵 Cash'}
+                  </span>
+                </td>
                 <td className="px-6 py-4 text-center">{getStatusBadge(order.status)}</td>
               </tr>
             ))}
