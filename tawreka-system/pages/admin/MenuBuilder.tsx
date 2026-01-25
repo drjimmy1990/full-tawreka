@@ -594,9 +594,9 @@ const MenuBuilder: React.FC = () => {
                                                     <input type="hidden" name="base_price" value="0" />
                                                 </div>
                                             ) : (
-                                                <div>
+                                                <div key={editingItem?.id || 'new-price'}>
                                                     <label className="text-xs font-bold text-gray-500">{t('menu.price')} ({t('common.currency')}) *</label>
-                                                    <input type="number" step="0.5" name="base_price" defaultValue={editingItem?.base_price !== undefined ? editingItem.base_price : ''} required className="w-full border p-2 rounded mt-1 bg-blue-50" />
+                                                    <input type="number" step="0.5" name="base_price" defaultValue={editingItem?.base_price ?? ''} required className="w-full border p-2 rounded mt-1 bg-blue-50" />
                                                 </div>
                                             );
                                         })()}

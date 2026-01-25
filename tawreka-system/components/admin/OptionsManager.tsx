@@ -178,6 +178,7 @@ const OptionsManager: React.FC = () => {
             // We will use the ARRAY INDEX as the truth for sort_order.
 
             await api.updateOptionChoiceSortOrder(itemA.id, index + direction); // New pos
+            await api.updateOptionChoiceSortOrder(itemB.id, index); // New pos for the other one
             await api.updateOptionChoiceSortOrder(itemB.id, index); // New pos
         }
         // If there's an error, loadGroups() will revert the optimistic update.
@@ -285,10 +286,15 @@ const OptionsManager: React.FC = () => {
                                         <div className="space-y-2">
                                             {group.option_choices.map((choice, index) => (
                                                 <div key={choice.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-medium text-gray-800">{getName(choice)}</span>
-                                                        <span className="text-sm text-green-600 font-bold">
-                                                            {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-medium text-gray-800">{getName(choice)}</span>
+                                                            <span className="text-sm text-green-600 font-bold">
+                                                                {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-xs text-gray-400">
+                                                            {language === 'ar' ? choice.description_ar : choice.description_en}
                                                         </span>
                                                     </div>
                                                     <div className="flex gap-1">
@@ -398,9 +404,17 @@ const OptionsManager: React.FC = () => {
                             {/* Name */}
                             <div>
                                 <label className="text-xs font-bold text-gray-500 mb-1 block">{language === 'ar' ? 'اسم الخيار' : 'Choice Name'} ({activeLang.toUpperCase()}) {activeLang === 'ar' && '*'}</label>
-                                <input name="name_ar" defaultValue={editingChoice?.name_ar} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} placeholder="كبير" required />
-                                <input name="name_en" defaultValue={editingChoice?.name_en} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} placeholder="Large" />
-                                <input name="name_other" defaultValue={editingChoice?.name_other} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} placeholder="Большой" />
+                                <input name="name_ar" defaultValue={editingChoice?.name_ar || ''} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} placeholder="كبير" required />
+                                <input name="name_en" defaultValue={editingChoice?.name_en || ''} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} placeholder="Large" />
+                                <input name="name_other" defaultValue={editingChoice?.name_other || ''} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} placeholder="Большой" />
+                            </div>
+
+                            {/* Descriptions */}
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 mb-1 block">{language === 'ar' ? 'الوصف' : 'Description'} ({activeLang.toUpperCase()})</label>
+                                <input name="description_ar" defaultValue={editingChoice?.description_ar || ''} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} placeholder="وصف إضافي (اختياري)" />
+                                <input name="description_en" defaultValue={editingChoice?.description_en || ''} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} placeholder="Optional description" />
+                                <input name="description_other" defaultValue={editingChoice?.description_other || ''} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} placeholder="Дополнительное описание" />
                             </div>
 
                             {/* Price Note */}

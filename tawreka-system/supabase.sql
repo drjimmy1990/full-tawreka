@@ -1052,3 +1052,13 @@ ALTER TABLE public.option_choices
 ADD COLUMN IF NOT EXISTS description_ar TEXT,
 ADD COLUMN IF NOT EXISTS description_en TEXT,
 ADD COLUMN IF NOT EXISTS description_other TEXT;
+
+-- 1. Refresh Policies for option_choices (Safe, just re-applies the same policy)
+DROP POLICY IF EXISTS "Admins manage option choices" ON public.option_choices;
+
+CREATE POLICY "Admins manage option choices" ON public.option_choices FOR ALL TO authenticated USING (true)
+WITH
+    CHECK (true);
+
+-- 2. Force refresh schema cache (Critical step)
+NOTIFY pgrst, 'reload schema';

@@ -1,25 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { AnalyticsData } from '../../types';
+import { AnalyticsData, Branch } from '../../types';
 import { useI18n } from '../../i18n';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import { DollarSign, ShoppingBag, Clock, TrendingUp, CreditCard, Package, Calendar, Search, RefreshCw, X, ChevronDown, Loader2 } from 'lucide-react';
+import { DollarSign, ShoppingBag, Clock, TrendingUp, CreditCard, Package, Calendar, Search, RefreshCw, X, ChevronDown, Loader2, Store } from 'lucide-react';
 
 const Analytics: React.FC = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [dateRange, setDateRange] = useState<{ start: string, end: string }>({ start: '', end: '' });
   const [loading, setLoading] = useState(true);
   const [selectedPreset, setSelectedPreset] = useState<string>('');
-  const { t } = useI18n();
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<number | ''>('');
+  const { t, language } = useI18n();
+
+  useEffect(() => {
+    loadBranches();
+    fetchData();
+  }, []);
+
+  const loadBranches = async () => {
+    try {
+      const list = await api.getBranches();
+      setBranches(list);
+    } catch (err) {
+      console.error('Failed to load branches');
+    }
+  };
 
   // FIX: Converted to Async/Await for better stability
-  const fetchData = async (overrideStart?: string, overrideEnd?: string) => {
+  const fetchData = async (overrideStart?: string, overrideEnd?: string, overrideBranch?: number | '') => {
     setLoading(true);
     const start = overrideStart !== undefined ? overrideStart : dateRange.start;
     const end = overrideEnd !== undefined ? overrideEnd : dateRange.end;
+    const branchId = overrideBranch !== undefined ? overrideBranch : selectedBranch;
 
     try {
-      const result = await api.getAnalytics(start, end);
+      const result = await api.getAnalytics(start, end, branchId);
       setData(result);
     } catch (error) {
       console.error("Analytics Error:", error);
@@ -28,16 +45,13 @@ const Analytics: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const handleApplyFilter = () => fetchData();
 
   const handleResetFilter = () => {
     setDateRange({ start: '', end: '' });
     setSelectedPreset('');
-    fetchData('', '');
+    setSelectedBranch('');
+    fetchData('', '', '');
   };
 
   const applyPreset = (preset: string) => {
@@ -48,39 +62,44 @@ const Analytics: React.FC = () => {
 
     const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
+    let newStart = '';
+    let newEnd = '';
+
     switch (preset) {
       case 'today':
-        setDateRange({ start: formatDate(today), end: formatDate(today) });
-        fetchData(formatDate(today), formatDate(today));
+        newStart = formatDate(today);
+        newEnd = formatDate(today);
         break;
       case 'yesterday':
         start.setDate(today.getDate() - 1);
         end.setDate(today.getDate() - 1);
-        setDateRange({ start: formatDate(start), end: formatDate(end) });
-        fetchData(formatDate(start), formatDate(end));
+        newStart = formatDate(start);
+        newEnd = formatDate(end);
         break;
       case 'last_week':
         start.setDate(today.getDate() - 7);
-        setDateRange({ start: formatDate(start), end: formatDate(today) });
-        fetchData(formatDate(start), formatDate(today));
+        newStart = formatDate(start);
+        newEnd = formatDate(today);
         break;
       case 'last_month':
         start.setDate(today.getDate() - 30);
-        setDateRange({ start: formatDate(start), end: formatDate(today) });
-        fetchData(formatDate(start), formatDate(today));
+        newStart = formatDate(start);
+        newEnd = formatDate(today);
         break;
       case 'last_year':
         start.setFullYear(today.getFullYear() - 1);
-        setDateRange({ start: formatDate(start), end: formatDate(today) });
-        fetchData(formatDate(start), formatDate(today));
+        newStart = formatDate(start);
+        newEnd = formatDate(today);
         break;
       case 'all_time':
-        setDateRange({ start: '', end: '' });
-        fetchData('', '');
+        newStart = '';
+        newEnd = '';
         break;
       default:
         break;
     }
+    setDateRange({ start: newStart, end: newEnd });
+    fetchData(newStart, newEnd);
   };
 
   if (loading && !data) {
@@ -119,6 +138,22 @@ const Analytics: React.FC = () => {
         </div>
 
         <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full xl:w-auto">
+
+          {/* Branch Selector */}
+          <div className="relative w-full md:w-48">
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value ? Number(e.target.value) : '')}
+              className="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none shadow-sm cursor-pointer"
+            >
+              <option value="">{language === 'ar' ? 'كل الفروع' : 'All Branches'}</option>
+              {branches.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+          </div>
+
           {/* Quick Select Dropdown */}
           <div className="relative w-full md:w-48">
             <select
@@ -174,7 +209,7 @@ const Analytics: React.FC = () => {
               {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               {t('filter.apply')}
             </button>
-            {(dateRange.start || dateRange.end) && (
+            {(dateRange.start || dateRange.end || selectedBranch) && (
               <button
                 onClick={handleResetFilter}
                 className="bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500 p-2.5 rounded-lg transition-colors border border-gray-200"
@@ -301,8 +336,8 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Row 3: Top Products, Categories, Branch Perf */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Row 3: Top Products, Categories removed as requested */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
             <ShoppingBag className="w-5 h-5 mr-2 text-green-500" />
@@ -330,54 +365,7 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        {/* Sales by Category */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
-            <Package className="w-5 h-5 mr-2 text-purple-500" />
-            {t('analytics.charts.category_sales') || 'Category Sales'}
-          </h3>
-          <div className="h-64 w-full relative" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data.salesByCategory}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {data.salesByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Center Text */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <span className="block text-xl font-bold text-gray-800">
-                  {data.salesByCategory.length}
-                </span>
-                <span className="text-xs text-gray-400 uppercase">Cats</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-            {data.salesByCategory.map(cat => (
-              <div key={cat.name} className="flex justify-between items-center text-sm">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: cat.color }}></div>
-                  <span className="text-gray-600 font-medium truncate max-w-[120px]" title={cat.name}>{cat.name}</span>
-                </div>
-                <span className="font-semibold">{cat.value.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
+        {/* Branch Revenue - Kept as chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
             <DollarSign className="w-5 h-5 mr-2 text-blue-500" />

@@ -232,11 +232,12 @@ export const api = {
   // ----------------------------------------------------
   // ANALYTICS
   // ----------------------------------------------------
-  getAnalytics: async (startDate?: string, endDate?: string): Promise<AnalyticsData> => {
+  getAnalytics: async (startDate?: string, endDate?: string, branchId?: string | number): Promise<AnalyticsData> => {
     let query = supabase.from('orders').select('*, branches(name)');
 
     if (startDate) query = query.gte('created_at', new Date(startDate).toISOString());
     if (endDate) query = query.lte('created_at', new Date(endDate).toISOString());
+    if (branchId) query = query.eq('branch_id', branchId);
 
     const { data: orders, error } = await query;
     if (error || !orders) return {
@@ -633,6 +634,9 @@ export const api = {
           name_ar: choice.name_ar,
           name_en: choice.name_en,
           name_other: choice.name_other,
+          description_ar: choice.description_ar, // New
+          description_en: choice.description_en, // New
+          description_other: choice.description_other, // New
           price_modifier: choice.price_modifier,
           is_available: choice.is_available
         })
