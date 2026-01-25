@@ -11,9 +11,10 @@ interface MenuItemProps {
     minPrice?: number;
     onAdd: () => void;
     isAvailable?: boolean; // New Prop
+    badgeText?: string; // New Prop for Badge
 }
 
-export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice, isAvailable }: MenuItemProps) {
+export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice, isAvailable, badgeText }: MenuItemProps) {
     const { t } = useTranslation();
 
     // Default to true if undefined
@@ -33,6 +34,13 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
 
             {/* Image Container */}
             <div className="w-28 h-28 bg-gray-100 rounded-xl shrink-0 overflow-hidden relative">
+                {/* Badge Overlay */}
+                {badgeText && available && (
+                    <div className="absolute top-0 right-0 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-xl shadow-sm">
+                        {badgeText}
+                    </div>
+                )}
+
                 <img
                     src={image}
                     alt={name}
@@ -57,8 +65,8 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
                         onClick={available ? onAdd : undefined}
                         disabled={!available}
                         className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm transition-all ${available
-                                ? 'bg-gray-50 text-primary hover:bg-primary hover:text-white hover:scale-110 active:scale-95'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-gray-50 text-primary hover:bg-primary hover:text-white hover:scale-110 active:scale-95'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             }`}
                     >
                         <Plus className="w-5 h-5" />

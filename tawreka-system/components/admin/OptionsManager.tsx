@@ -207,7 +207,9 @@ const OptionsManager: React.FC = () => {
                                                 {group.min_selection > 0 ? (language === 'ar' ? 'مطلوب' : 'Required') : (language === 'ar' ? 'اختياري' : 'Optional')}
                                             </span>
                                             <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                                                {group.max_selection === 1 ? (language === 'ar' ? 'اختيار واحد' : 'Single') : (language === 'ar' ? 'متعدد' : 'Multiple')}
+                                                {group.max_selection === 1
+                                                    ? (language === 'ar' ? 'اختيار واحد' : 'Single Choice')
+                                                    : (language === 'ar' ? `حد أقصى: ${group.max_selection}` : `Max: ${group.max_selection}`)}
                                             </span>
                                             {group.is_price_replacement && (
                                                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded flex items-center gap-1">
@@ -290,9 +292,9 @@ const OptionsManager: React.FC = () => {
                                     <p className="text-xs text-gray-400 mt-1">{language === 'ar' ? '0 = اختياري' : '0 = Optional'}</p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500">{language === 'ar' ? 'الحد الأقصى' : 'Max Selection'}</label>
+                                    <label className="text-xs font-bold text-gray-500">{language === 'ar' ? 'الحد الأقصى للاختيارات' : 'Max Selections Allowed'}</label>
                                     <input type="number" name="max_selection" defaultValue={editingGroup?.max_selection || 1} min="1" className="w-full border p-2 rounded mt-1" />
-                                    <p className="text-xs text-gray-400 mt-1">{language === 'ar' ? '1 = اختيار واحد' : '1 = Single choice'}</p>
+                                    <p className="text-xs text-gray-400 mt-1">{language === 'ar' ? 'أقصى عدد يمكن للعميل اختياره (مثلاً 3 صوصات)' : 'Max total items user can pick from this group'}</p>
                                 </div>
                             </div>
 

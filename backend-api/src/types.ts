@@ -159,6 +159,11 @@ export interface MenuItem {
     is_available?: boolean; // New: Controls "Out of Stock" visibility
     options: OptionGroup[];
 
+    // Badge support
+    badge_text_ar?: string;
+    badge_text_en?: string;
+    badge_text_other?: string;
+
     // Item-specific variations (sizes and extras)
     variations?: ItemVariations;
 }

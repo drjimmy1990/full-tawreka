@@ -398,7 +398,7 @@ export const api = {
   },
 
   getMenuItems: async (categoryId?: number) => {
-    let query = supabase.from('menu_items').select('*').order('id', { ascending: false });
+    let query = supabase.from('menu_items').select('*').order('sort_order', { ascending: true });
     if (categoryId) query = query.eq('category_id', categoryId);
 
     const { data, error } = await query;

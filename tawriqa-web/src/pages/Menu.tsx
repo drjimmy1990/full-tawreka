@@ -31,6 +31,8 @@ export default function Menu() {
     const [activeCategory, setActiveCategory] = useState<number>(0);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [editingCartItem, setEditingCartItem] = useState<any | null>(null);
+    const { removeItem, addToCart } = useCartStore();
 
     // Background from settings or fallback
     const heroImage = settings?.hero_cover || '/assets/images/menu-cover.avif';
@@ -58,6 +60,43 @@ export default function Menu() {
         fetchMenu();
     }, [branch]);
 
+    // Scroll Spy Effect
+    useEffect(() => {
+        const handleScroll = () => {
+            // 1. Get all category sections
+            const sectionElements = categories.map(cat => ({
+                id: cat.id,
+                el: document.getElementById(`category-${cat.id}`)
+            }));
+
+            // 2. Find the one closest to the top (offset by header height ~150px)
+            let currentActive = activeCategory;
+            let minDistance = Infinity;
+
+            sectionElements.forEach(section => {
+                if (section.el) {
+                    const rect = section.el.getBoundingClientRect();
+                    // We target a point around 180px down from the top (just below the sticky bar)
+                    // We check which header is closest to this point
+                    const distance = Math.abs(rect.top - 180);
+
+                    // Simple logic: If the section top is near the trigger point
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        currentActive = section.id;
+                    }
+                }
+            });
+
+            if (currentActive !== activeCategory && currentActive !== 0) { // Check 0
+                setActiveCategory(currentActive);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [categories, activeCategory]);
+
     const cartCount = getItemCount();
 
     // Helper to calculate "From" price for items with variations
@@ -68,7 +107,11 @@ export default function Menu() {
         const sizeGroup = item.options.find((g: any) => g.is_price_replacement);
         if (sizeGroup && sizeGroup.choices?.length > 0) {
             // Return the lowest price among sizes
-            return Math.min(...sizeGroup.choices.map((c: any) => c.price_modifier));
+            const validPrices = sizeGroup.choices
+                .map((c: any) => c.price_modifier)
+                .filter((p: number) => p > 0);
+
+            return validPrices.length > 0 ? Math.min(...validPrices) : 0;
         }
 
         return 0;
@@ -168,6 +211,7 @@ export default function Menu() {
                                         minPrice={calculateMinPrice(item)}
                                         onAdd={() => setSelectedItem(item)}
                                         isAvailable={item.is_available} // Pass availability
+                                        badgeText={lang === 'ar' ? item.badge_text_ar : (item.badge_text_en || item.badge_text_ar)}
                                     />
                                 ))
                             ) : (
@@ -197,10 +241,28 @@ export default function Menu() {
             )}
 
             {/* Product Modal */}
-            {selectedItem && (
+            {(selectedItem || editingCartItem) && (
                 <ProductModal
-                    item={selectedItem}
-                    onClose={() => setSelectedItem(null)}
+                    item={selectedItem || categories.find(c => c.items.some((i: any) => i.id === editingCartItem.menuItemId))?.items.find((i: any) => i.id === editingCartItem.menuItemId)}
+                    onClose={() => { setSelectedItem(null); setEditingCartItem(null); }}
+                    initialSelections={editingCartItem ? (() => {
+                        // Reconstruct selections from cart item format
+                        const sels: Record<number, number[]> = {};
+                        editingCartItem.selectedOptions.forEach((opt: any) => {
+                            if (!sels[opt.groupId]) sels[opt.groupId] = [];
+                            sels[opt.groupId].push(opt.choiceId);
+                        });
+                        return sels;
+                    })() : undefined}
+                    initialQuantity={editingCartItem?.quantity}
+                    initialNotes={editingCartItem?.notes}
+                    editingCartItemId={editingCartItem?.id}
+                    onUpdate={(oldId, newItem) => {
+                        removeItem(oldId);
+                        addToCart(newItem);
+                        setEditingCartItem(null);
+                        setSelectedItem(null);
+                    }}
                 />
             )}
 
@@ -208,6 +270,19 @@ export default function Menu() {
             <CartDrawer
                 isOpen={isCartOpen}
                 onClose={() => setIsCartOpen(false)}
+                onEditItem={(item) => {
+                    // Find the original menu item
+                    let foundItem = null;
+                    for (const cat of categories) {
+                        foundItem = cat.items.find((i: any) => i.id === item.menuItemId);
+                        if (foundItem) break;
+                    }
+                    if (foundItem) {
+                        setEditingCartItem(item);
+                        setSelectedItem(foundItem);
+                        setIsCartOpen(false); // Close cart to show modal
+                    }
+                }}
             />
         </div>
     );

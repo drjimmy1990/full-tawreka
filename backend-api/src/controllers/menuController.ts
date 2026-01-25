@@ -55,7 +55,8 @@ export const getBranchMenu = async (req: Request, res: Response) => {
             .from('menu_items')
             .select('*')
             .eq('is_active', true)
-            .order('category_id');
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
 
         if (itemError) throw itemError;
 
@@ -198,6 +199,9 @@ export const getBranchMenu = async (req: Request, res: Response) => {
                 base_price: item.base_price,
                 current_price: finalPrice,
                 is_available: isAvailable, // Added
+                badge_text_ar: item.badge_text_ar, // Added
+                badge_text_en: item.badge_text_en, // Added
+                badge_text_other: item.badge_text_other, // Added
                 options: itemOptions as unknown as OptionGroup[]
             };
 
@@ -212,6 +216,11 @@ export const getBranchMenu = async (req: Request, res: Response) => {
 
     } catch (err: any) {
         console.error("Menu Error:", err);
+        try {
+            const fs = require('fs');
+            fs.writeFileSync('latest_error.log', new Date().toISOString() + '\n' + (typeof err === 'object' ? (err.message + '\n' + err.stack) : String(err)));
+        } catch (e) { console.error("Log Write Failed", e); }
+
         res.status(500).json({ error: err.message });
     }
 };

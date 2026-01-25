@@ -1011,3 +1011,11 @@ COMMENT ON COLUMN public.branches.is_delivery_available IS 'If false, delivery s
 ALTER TABLE public.branches
 ADD COLUMN IF NOT EXISTS name_ru TEXT,
 ADD COLUMN IF NOT EXISTS address_ru TEXT;
+
+ALTER TABLE public.menu_items
+ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+
+ALTER TABLE public.menu_items
+ADD COLUMN IF NOT EXISTS badge_text_ar TEXT,
+ADD COLUMN IF NOT EXISTS badge_text_en TEXT,
+ADD COLUMN IF NOT EXISTS badge_text_other TEXT;

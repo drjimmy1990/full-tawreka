@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { Plus, Edit, Trash2, Image, Save, X, Loader2, Upload, Settings2, LayoutGrid } from 'lucide-react';
+import { Plus, Edit, Trash2, Image, Save, X, Loader2, Upload, Settings2, LayoutGrid, ArrowUp, ArrowDown } from 'lucide-react';
 import { useI18n } from '../../i18n';
 import OptionsManager from '../../components/admin/OptionsManager';
 
@@ -193,6 +193,10 @@ const MenuBuilder: React.FC = () => {
             description_other: formData.get('description_other') || '',
             base_price: parseFloat(formData.get('base_price') as string) || 0,
             image_url: imageUrl || null,
+            // Badge Texts
+            badge_text_ar: formData.get('badge_text_ar'),
+            badge_text_en: formData.get('badge_text_en'),
+            badge_text_other: formData.get('badge_text_other'),
             is_active: formData.get('is_active') === 'on' // Read from checkbox
         };
 
@@ -240,6 +244,44 @@ const MenuBuilder: React.FC = () => {
             loadData();
         } catch (err) {
             alert(t('menu.error_delete'));
+        }
+    };
+
+    const handleMoveItem = async (index: number, direction: 'up' | 'down') => {
+        if (!items || items.length < 2) return;
+
+        const newItems = [...items];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+        // Bounds check
+        if (targetIndex < 0 || targetIndex >= newItems.length) return;
+
+        // Swap order values (if they are missing, default to index)
+        const itemA = newItems[index];
+        const itemB = newItems[targetIndex];
+
+        // Ensure everyone has a sort_order
+        const orderA = itemA.sort_order || index;
+        const orderB = itemB.sort_order || targetIndex;
+
+        // Optimistic update
+        const tempOrder = orderA;
+        itemA.sort_order = orderB;
+        itemB.sort_order = tempOrder;
+
+        // Swap in array for smooth UI
+        newItems[index] = itemB;
+        newItems[targetIndex] = itemA;
+        setItems(newItems);
+
+        try {
+            // Persist both
+            await api.saveMenuItem({ id: itemA.id, sort_order: itemA.sort_order });
+            await api.saveMenuItem({ id: itemB.id, sort_order: itemB.sort_order });
+        } catch (err) {
+            console.error("Failed to reorder", err);
+            // Revert on error could be added here
+            loadItems(selectedCat!);
         }
     };
 
@@ -385,9 +427,16 @@ const MenuBuilder: React.FC = () => {
                                                     <p className="text-blue-600 font-bold mt-1">{item.base_price} {t('common.currency')}</p>
                                                 </div>
                                             </div>
-                                            <div className="absolute top-2 ltr:right-2 rtl:left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                                <button onClick={() => openEditModal(item)} className="p-1.5 bg-gray-100 hover:bg-blue-100 text-blue-600 rounded"><Edit className="w-4 h-4" /></button>
-                                                <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 bg-gray-100 hover:bg-red-100 text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
+
+                                            {/* Action Footer */}
+                                            <div className="mt-3 pt-2 border-t border-gray-100 flex justify-end gap-1">
+                                                <div className="flex bg-gray-50 rounded-lg p-0.5 mr-auto rtl:mr-0 rtl:ml-auto">
+                                                    <button onClick={() => handleMoveItem(items.indexOf(item), 'up')} className="p-1.5 hover:bg-white hover:shadow-sm rounded text-gray-600 transition-all"><ArrowUp className="w-4 h-4" /></button>
+                                                    <button onClick={() => handleMoveItem(items.indexOf(item), 'down')} className="p-1.5 hover:bg-white hover:shadow-sm rounded text-gray-600 transition-all"><ArrowDown className="w-4 h-4" /></button>
+                                                </div>
+
+                                                <button onClick={() => openEditModal(item)} className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition-colors"><Edit className="w-4 h-4" /></button>
+                                                <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition-colors"><Trash2 className="w-4 h-4" /></button>
                                             </div>
                                         </div>
                                     ))}
@@ -491,9 +540,9 @@ const MenuBuilder: React.FC = () => {
                                         <label className="text-xs font-bold text-gray-500 mb-1 block">
                                             {t('menu.name_ar').replace('(عربي)', '').replace('(Arabic)', '')} ({activeLang.toUpperCase()}) {activeLang === 'ar' && '*'}
                                         </label>
-                                        <input name="name_ar" defaultValue={editingItem?.name_ar} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} placeholder="اسم الصنف" required />
-                                        <input name="name_en" defaultValue={editingItem?.name_en} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} placeholder="Item Name" />
-                                        <input name="name_other" defaultValue={editingItem?.name_other} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} placeholder="Nom de l'article" />
+                                        <input name="name_ar" defaultValue={editingItem?.name_ar || ''} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} placeholder="اسم الصنف" required />
+                                        <input name="name_en" defaultValue={editingItem?.name_en || ''} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} placeholder="Item Name" />
+                                        <input name="name_other" defaultValue={editingItem?.name_other || ''} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} placeholder="Nom de l'article" />
                                     </div>
 
                                     {/* Description - Multi-language */}
@@ -505,6 +554,18 @@ const MenuBuilder: React.FC = () => {
                                         <textarea name="description_en" defaultValue={editingItem?.description_en} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} rows={3} placeholder="Ingredients description..." />
                                         <textarea name="description_other" defaultValue={editingItem?.description_other} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} rows={3} placeholder="Description des ingrédients..." />
                                     </div>
+
+                                    {/* Badges - Multi-language */}
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 mb-1 block">
+                                            {language === 'ar' ? 'نص الشارة (اختياري)' : 'Badge Text (Optional)'} ({activeLang.toUpperCase()})
+                                        </label>
+                                        <input name="badge_text_ar" defaultValue={editingItem?.badge_text_ar || ''} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} placeholder="مثال: الأكثر مبيعاً، حار" />
+                                        <input name="badge_text_en" defaultValue={editingItem?.badge_text_en || ''} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} placeholder="e.g. Best Seller, Spicy" />
+                                        <input name="badge_text_other" defaultValue={editingItem?.badge_text_other || ''} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} placeholder="Badge text (3rd lang)" />
+                                    </div>
+
+
 
                                     {/* Common Fields - Always Visible */}
                                     <div className="border-t pt-4 space-y-4">

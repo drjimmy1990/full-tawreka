@@ -9,9 +9,14 @@ import type { MenuItem, MenuOptionGroup, MenuOptionChoice } from '../../types';
 interface ProductModalProps {
     item: MenuItem;
     onClose: () => void;
+    initialSelections?: Record<number, number[]>;
+    initialQuantity?: number;
+    initialNotes?: string;
+    editingCartItemId?: string;
+    onUpdate?: (oldId: string, newItem: any) => void;
 }
 
-export default function ProductModal({ item, onClose }: ProductModalProps) {
+export default function ProductModal({ item, onClose, initialSelections, initialQuantity, initialNotes, editingCartItemId, onUpdate }: ProductModalProps) {
     const { t, lang } = useTranslation();
     const { addToCart } = useCartStore();
 
@@ -19,9 +24,11 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
     const getChoices = (group: any) => group.choices || group.option_choices || [];
 
     // Form State
-    const [quantity, setQuantity] = useState(1);
-    const [notes, setNotes] = useState('');
+    const [quantity, setQuantity] = useState(initialQuantity || 1);
+    const [notes, setNotes] = useState(initialNotes || '');
     const [selections, setSelections] = useState<Record<number, number[]>>(() => {
+        if (initialSelections) return initialSelections;
+
         // Auto-select first choice for price replacement (single-select) groups
         const initial: Record<number, number[]> = {};
         item.options?.forEach(group => {
@@ -114,16 +121,29 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
             });
         });
 
-        addToCart({
-            menuItemId: item.id,
-            name: lang === 'ar' ? item.name_ar : (item.name_en || item.name_ar),
-            basePrice: item.current_price || item.base_price,
-            quantity,
-            notes,
-            totalPrice: calculateTotal() / quantity,
-            selectedOptions: selectedOptionsList,
-            image: item.image_url
-        });
+        if (editingCartItemId && onUpdate) {
+            onUpdate(editingCartItemId, {
+                menuItemId: item.id,
+                name: lang === 'ar' ? item.name_ar : (item.name_en || item.name_ar),
+                basePrice: item.current_price || item.base_price,
+                quantity,
+                notes,
+                totalPrice: calculateTotal() / quantity,
+                selectedOptions: selectedOptionsList,
+                image: item.image_url
+            });
+        } else {
+            addToCart({
+                menuItemId: item.id,
+                name: lang === 'ar' ? item.name_ar : (item.name_en || item.name_ar),
+                basePrice: item.current_price || item.base_price,
+                quantity,
+                notes,
+                totalPrice: calculateTotal() / quantity,
+                selectedOptions: selectedOptionsList,
+                image: item.image_url
+            });
+        }
         onClose();
     };
 
@@ -170,36 +190,113 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
                                             {lang === 'ar' ? 'مطلوب' : 'Required'}
                                         </span>
                                     )}
+                                    {group.max_selection > 1 && (
+                                        <span className={`text-xs px-2 py-1 rounded font-bold ${(group.max_selection - (selections[group.id]?.length || 0)) <= 0
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-blue-50 text-blue-600'
+                                            }`}>
+                                            {lang === 'ar'
+                                                ? `متبقي: ${Math.max(0, group.max_selection - (selections[group.id]?.length || 0))}`
+                                                : `Remaining: ${Math.max(0, group.max_selection - (selections[group.id]?.length || 0))}`}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    {getChoices(group).map((choice: MenuOptionChoice) => {
-                                        const isSelected = selections[group.id]?.includes(choice.id);
-                                        return (
-                                            <label
-                                                key={choice.id}
-                                                className={clsx(
-                                                    "flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all",
-                                                    isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-gray-100 hover:border-gray-200"
-                                                )}
-                                                onClick={() => handleOptionToggle(group.id, choice.id, group.max_selection)}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={clsx(
-                                                        "w-5 h-5 rounded-full border-2 flex items-center justify-center",
-                                                        isSelected ? "border-primary bg-primary" : "border-gray-300"
+                                    {getChoices(group)
+                                        .filter((choice: MenuOptionChoice) => !(group.is_price_replacement && choice.price_modifier === 0))
+                                        .map((choice: MenuOptionChoice) => {
+                                            const currentGroupSelections = selections[group.id] || [];
+                                            const qty = currentGroupSelections.filter(id => id === choice.id).length;
+                                            const isSelected = qty > 0;
+                                            const isMulti = group.max_selection > 1;
+                                            const totalSelected = currentGroupSelections.length;
+
+                                            if (isMulti) {
+                                                // MULTI-SELECT COUNTER UI
+                                                return (
+                                                    <div key={choice.id} className={clsx(
+                                                        "flex items-center justify-between p-3 rounded-xl border transition-all",
+                                                        isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-gray-100"
                                                     )}>
-                                                        {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="font-medium text-gray-700">
+                                                                {lang === 'ar' ? choice.name_ar : choice.name_en}
+                                                            </span>
+                                                            <span className="text-sm text-gray-500 font-bold">
+                                                                {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {lang === 'ar' ? 'ج.م' : 'EGP'}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-1">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation(); // Prevent bubble
+                                                                    if (qty > 0) {
+                                                                        setSelections(prev => {
+                                                                            const current = prev[group.id] || [];
+                                                                            const idx = current.indexOf(choice.id);
+                                                                            if (idx > -1) {
+                                                                                const newArr = [...current];
+                                                                                newArr.splice(idx, 1);
+                                                                                return { ...prev, [group.id]: newArr };
+                                                                            }
+                                                                            return prev;
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                disabled={qty === 0}
+                                                                className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                                                            >
+                                                                <Minus className="w-4 h-4 text-gray-600" />
+                                                            </button>
+                                                            <span className="w-6 text-center font-bold text-gray-800">{qty}</span>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (totalSelected < group.max_selection || group.max_selection === 0) {
+                                                                        setSelections(prev => ({
+                                                                            ...prev,
+                                                                            [group.id]: [...(prev[group.id] || []), choice.id]
+                                                                        }));
+                                                                    }
+                                                                }}
+                                                                disabled={(group.max_selection > 0 && totalSelected >= group.max_selection)}
+                                                                className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                                                            >
+                                                                <Plus className="w-4 h-4 text-blue-600" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <span className={clsx("font-medium", isSelected ? "text-primary" : "text-gray-700")}>
-                                                        {lang === 'ar' ? choice.name_ar : choice.name_en}
-                                                    </span>
-                                                </div>
-                                                <span className={clsx("font-bold", isSelected ? "text-primary" : "text-gray-500")}>
-                                                    {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {lang === 'ar' ? 'ج.م' : 'EGP'}
-                                                </span>
-                                            </label>
-                                        );
-                                    })}
+                                                );
+                                            } else {
+                                                // SINGLE SELECT RADIO UI (Existing Logic)
+                                                return (
+                                                    <label
+                                                        key={choice.id}
+                                                        className={clsx(
+                                                            "flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all",
+                                                            isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-gray-100 hover:border-gray-200"
+                                                        )}
+                                                        onClick={() => handleOptionToggle(group.id, choice.id, group.max_selection)}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={clsx(
+                                                                "w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                                                                isSelected ? "border-primary bg-primary" : "border-gray-300"
+                                                            )}>
+                                                                {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                                            </div>
+                                                            <span className={clsx("font-medium", isSelected ? "text-primary" : "text-gray-700")}>
+                                                                {lang === 'ar' ? choice.name_ar : choice.name_en}
+                                                            </span>
+                                                        </div>
+                                                        <span className={clsx("font-bold", isSelected ? "text-primary" : "text-gray-500")}>
+                                                            {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {lang === 'ar' ? 'ج.م' : 'EGP'}
+                                                        </span>
+                                                    </label>
+                                                );
+                                            }
+                                        })}
                                 </div>
                             </div>
                         ))}
@@ -250,8 +347,17 @@ export default function ProductModal({ item, onClose }: ProductModalProps) {
                     </div>
 
                     <Button onClick={handleAddToCart} className="w-full py-4 gap-2">
-                        <ShoppingBag className="w-5 h-5" />
-                        {t('menu.add_to_cart')}
+                        {editingCartItemId ? (
+                            <>
+                                <ShoppingBag className="w-5 h-5" />
+                                {lang === 'ar' ? 'تحديث الطلب' : 'Update Order'}
+                            </>
+                        ) : (
+                            <>
+                                <ShoppingBag className="w-5 h-5" />
+                                {t('menu.add_to_cart')}
+                            </>
+                        )}
                     </Button>
                 </div>
             </div>
