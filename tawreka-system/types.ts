@@ -68,6 +68,9 @@ export interface Order {
   subtotal: number;
   delivery_fee: number;
   total_price: number;
+  service_type?: 'pickup' | 'delivery' | 'dine_in';
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_method?: 'cash' | 'card' | 'wallet';
 
   status: OrderStatus;
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { User, Order, OrderStatus, OrderItem } from '../../types';
 import { api } from '../../services/api';
 import { useI18n } from '../../i18n';
-import { Clock, MapPin, CheckCircle, Truck, PackageCheck, ChefHat, AlertCircle, Phone, Search, Eye, X, MessageSquareWarning, Ban, RotateCcw, AlertTriangle, Pencil, Save, PlusCircle, Trash, Loader2 } from 'lucide-react';
+import { Clock, MapPin, CheckCircle, Truck, PackageCheck, ChefHat, AlertCircle, Phone, Search, Eye, X, MessageSquareWarning, Ban, RotateCcw, AlertTriangle, Pencil, Save, PlusCircle, Trash, Loader2, ShoppingBag } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 // Helper to play sound safely
@@ -139,15 +139,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
               console.log('✅ Payment confirmed - playing sound');
             }
 
-            // NEW modification request arrived
-            if (!oldPending && newPending) {
-              shouldPlaySound = true;
-            }
-
-            // NEW: Order was just cancelled
-            if (oldStatus !== 'cancelled' && newStatus === 'cancelled') {
-              shouldPlaySound = true;
-            }
+            // MODIFICATION & CANCELLATION ALERTS REMOVED as per user request
+            // Only strictly NEW orders (Insert Cash or Update->Paid) play sound.
           }
 
           if (shouldPlaySound) {
@@ -218,12 +211,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
               if (newPaymentStatus === 'paid' && oldPaymentStatus !== 'paid') {
                 shouldPlaySound = true;
               }
-              if (!oldPending && newPending) {
-                shouldPlaySound = true;
-              }
-              if (oldStatus !== 'cancelled' && newStatus === 'cancelled') {
-                shouldPlaySound = true;
-              }
+              // MODIFICATION & CANCELLATION ALERTS REMOVED
             }
             if (shouldPlaySound) {
               playNotificationSound();
@@ -595,7 +583,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
               {/* Body */}
               <div className="p-4 flex-1 flex flex-col">
                 <div className="mb-4">
-                  <h3 className="text-lg font-bold text-gray-800 mb-1 truncate">{order.customer_name}</h3>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-gray-800 truncate flex-1">{order.customer_name}</h3>
+                    <div className="flex flex-col gap-1 items-end">
+                      {/* SERVICE TYPE BADGE */}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide flex items-center gap-1 border ${order.service_type === 'delivery'
+                        ? 'bg-blue-50 text-blue-700 border-blue-100'
+                        : 'bg-orange-50 text-orange-700 border-orange-100'
+                        }`}>
+                        {order.service_type === 'delivery'
+                          ? <><Truck className="w-3 h-3" /> {language === 'ar' ? 'توصيل' : 'Delivery'}</>
+                          : <><ShoppingBag className="w-3 h-3" /> {language === 'ar' ? 'استلام من الفرع' : 'Pickup'}</>
+                        }
+                      </span>
+
+                      {/* PAYMENT STATUS BADGE */}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border ${order.payment_status === 'paid'
+                        ? 'bg-green-50 text-green-700 border-green-100'
+                        : 'bg-gray-100 text-gray-500 border-gray-200'
+                        }`}>
+                        {order.payment_status === 'paid'
+                          ? (language === 'ar' ? 'مدفوع' : 'PAID')
+                          : (language === 'ar' ? 'غير مدفوع' : 'UNPAID')
+                        }
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="flex items-center text-gray-600 text-sm gap-2 mb-1">
                     <Phone className="w-4 h-4 flex-shrink-0" />
                     <p className="font-mono"><span dir="ltr">{order.customer_phone}</span></p>
@@ -836,6 +850,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                         <div>
                           <p className="text-gray-500 text-sm">Address</p>
                           <p className="font-medium text-gray-800">{selectedOrder.address_text}</p>
+                          {selectedOrder.customer_lat && selectedOrder.customer_lng && (
+                            <a
+                              href={`https://www.google.com/maps?q=${selectedOrder.customer_lat},${selectedOrder.customer_lng}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-blue-600 hover:underline mt-1 text-sm font-bold"
+                            >
+                              <MapPin className="w-3 h-3" /> View Location on Map
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
