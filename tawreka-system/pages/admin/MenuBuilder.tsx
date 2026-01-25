@@ -275,9 +275,9 @@ const MenuBuilder: React.FC = () => {
         setItems(newItems);
 
         try {
-            // Persist both
-            await api.saveMenuItem({ id: itemA.id, sort_order: itemA.sort_order });
-            await api.saveMenuItem({ id: itemB.id, sort_order: itemB.sort_order });
+            // Persist both using specific sort order update
+            await api.updateMenuItemSortOrder(itemA.id, itemA.sort_order);
+            await api.updateMenuItemSortOrder(itemB.id, itemB.sort_order);
         } catch (err) {
             console.error("Failed to reorder", err);
             // Revert on error could be added here
@@ -530,7 +530,11 @@ const MenuBuilder: React.FC = () => {
                                     <h3 className="font-bold text-gray-800">{editingItem ? t('menu.edit_item') : t('menu.new_item')}</h3>
                                     <button onClick={() => { setIsItemModalOpen(false); setEditingItem(null); setImageUrl(''); }}><X className="text-gray-500 hover:text-red-500" /></button>
                                 </div>
-                                <form onSubmit={handleSaveItem} className="p-6 space-y-4">
+                                <form
+                                    key={editingItem ? `edit-${editingItem.id}` : 'new-item'}
+                                    onSubmit={handleSaveItem}
+                                    className="p-6 space-y-4"
+                                >
 
                                     {/* Language Tabs */}
                                     <LanguageTabs />
@@ -550,9 +554,9 @@ const MenuBuilder: React.FC = () => {
                                         <label className="text-xs font-bold text-gray-500 mb-1 block">
                                             {t('menu.description')} ({activeLang.toUpperCase()})
                                         </label>
-                                        <textarea name="description_ar" defaultValue={editingItem?.description_ar} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} rows={3} placeholder="وصف المكونات..." />
-                                        <textarea name="description_en" defaultValue={editingItem?.description_en} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} rows={3} placeholder="Ingredients description..." />
-                                        <textarea name="description_other" defaultValue={editingItem?.description_other} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} rows={3} placeholder="Description des ingrédients..." />
+                                        <textarea name="description_ar" defaultValue={editingItem?.description_ar || ''} className={`w-full border p-2 rounded ${activeLang === 'ar' ? '' : 'hidden'}`} rows={3} placeholder="وصف المكونات..." />
+                                        <textarea name="description_en" defaultValue={editingItem?.description_en || ''} className={`w-full border p-2 rounded ${activeLang === 'en' ? '' : 'hidden'}`} rows={3} placeholder="Ingredients description..." />
+                                        <textarea name="description_other" defaultValue={editingItem?.description_other || ''} className={`w-full border p-2 rounded ${activeLang === 'other' ? '' : 'hidden'}`} rows={3} placeholder="Description des ingrédients..." />
                                     </div>
 
                                     {/* Badges - Multi-language */}
@@ -592,7 +596,7 @@ const MenuBuilder: React.FC = () => {
                                             ) : (
                                                 <div>
                                                     <label className="text-xs font-bold text-gray-500">{t('menu.price')} ({t('common.currency')}) *</label>
-                                                    <input type="number" step="0.5" name="base_price" defaultValue={editingItem?.base_price} required className="w-full border p-2 rounded mt-1 bg-blue-50" />
+                                                    <input type="number" step="0.5" name="base_price" defaultValue={editingItem?.base_price !== undefined ? editingItem.base_price : ''} required className="w-full border p-2 rounded mt-1 bg-blue-50" />
                                                 </div>
                                             );
                                         })()}

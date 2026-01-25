@@ -406,6 +406,16 @@ export const api = {
     return data;
   },
 
+  updateMenuItemSortOrder: async (id: number, sortOrder: number) => {
+    const { error } = await supabase.from('menu_items').update({ sort_order: sortOrder }).eq('id', id);
+    if (error) throw error;
+  },
+
+  updateCategorySortOrder: async (id: number, sortOrder: number) => {
+    const { error } = await supabase.from('menu_categories').update({ sort_order: sortOrder }).eq('id', id);
+    if (error) throw error;
+  },
+
 
   saveMenuItem: async (item: any) => {
     if (item.id) {

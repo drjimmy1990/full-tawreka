@@ -100,7 +100,7 @@ cd /www/wwwroot/api.tawreka.com
 
 **Option A - Git Clone:**
 ```bash
-git clone https://github.com/YOUR_USER/full-tawreka.git temp
+git clone https://github.com/drjimmy1990/full-tawreka.git temp
 mv temp/backend-api/* .
 rm -rf temp
 ```
