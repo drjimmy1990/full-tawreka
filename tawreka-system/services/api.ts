@@ -416,6 +416,11 @@ export const api = {
     if (error) throw error;
   },
 
+  updateOptionChoiceSortOrder: async (id: number, sortOrder: number) => {
+    const { error } = await supabase.from('option_choices').update({ sort_order: sortOrder }).eq('id', id);
+    if (error) throw error;
+  },
+
 
   saveMenuItem: async (item: any) => {
     if (item.id) {

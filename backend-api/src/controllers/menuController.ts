@@ -91,8 +91,9 @@ export const getBranchMenu = async (req: Request, res: Response) => {
         // E. Fetch ALL option_choices separately
         const { data: allChoices, error: choiceError } = await supabase
             .from('option_choices')
-            .select('id, group_id, name_ar, name_en, price_modifier, is_available')
-            .eq('is_available', true);
+            .select('id, group_id, name_ar, name_en, name_other, price_modifier, is_available, sort_order, description_ar, description_en, description_other')
+            .eq('is_available', true)
+            .order('sort_order', { ascending: true });
 
         if (choiceError) throw choiceError;
 

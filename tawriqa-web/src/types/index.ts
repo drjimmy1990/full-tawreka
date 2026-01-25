@@ -14,7 +14,11 @@ export interface MenuOptionChoice {
     id: number;
     name_ar: string;
     name_en: string;
+    name_other?: string;
     price_modifier: number;
+    description_ar?: string; // New
+    description_en?: string; // New
+    description_other?: string; // New
 }
 
 export interface MenuOptionGroup {

@@ -1019,3 +1019,36 @@ ALTER TABLE public.menu_items
 ADD COLUMN IF NOT EXISTS badge_text_ar TEXT,
 ADD COLUMN IF NOT EXISTS badge_text_en TEXT,
 ADD COLUMN IF NOT EXISTS badge_text_other TEXT;
+
+-- Add sort_order column for menu sorting
+
+-- Verify columns (Optional)
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE
+    table_name = 'menu_items'
+    AND column_name IN (
+        'sort_order',
+        'badge_text_ar',
+        'badge_text_en',
+        'badge_text_other'
+    );
+
+-- Add sort_order to option_choices
+ALTER TABLE public.option_choices
+ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+
+-- Function to reorder choices
+CREATE OR REPLACE FUNCTION update_option_choice_sort_order(p_id BIGINT, p_sort_order INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE public.option_choices
+    SET sort_order = p_sort_order
+    WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+ALTER TABLE public.option_choices
+ADD COLUMN IF NOT EXISTS description_ar TEXT,
+ADD COLUMN IF NOT EXISTS description_en TEXT,
+ADD COLUMN IF NOT EXISTS description_other TEXT;

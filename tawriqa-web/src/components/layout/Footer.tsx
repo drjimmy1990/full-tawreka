@@ -88,7 +88,7 @@ export default function Footer() {
                             {settings?.phone_number && (
                                 <li className="flex items-center gap-3 text-gray-400">
                                     <Phone className="w-4 h-4 text-primary" />
-                                    <a href={`tel:${settings.phone_number}`} className="text-sm hover:text-white transition-colors">
+                                    <a href={`tel:${settings.phone_number}`} dir="ltr" className="text-sm hover:text-white transition-colors text-right">
                                         {settings.phone_number}
                                     </a>
                                 </li>

@@ -219,9 +219,16 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                                                         isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-gray-100"
                                                     )}>
                                                         <div className="flex items-center gap-3">
-                                                            <span className="font-medium text-gray-700">
-                                                                {lang === 'ar' ? choice.name_ar : choice.name_en}
-                                                            </span>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-medium text-gray-700">
+                                                                    {lang === 'ar' ? choice.name_ar : (lang === 'ru' ? (choice.name_other || choice.name_en) : choice.name_en)}
+                                                                </span>
+                                                                {(lang === 'ar' ? choice.description_ar : lang === 'ru' ? choice.description_other : choice.description_en) && (
+                                                                    <span className="text-[10px] text-gray-400 mt-0.5">
+                                                                        {lang === 'ar' ? choice.description_ar : lang === 'ru' ? choice.description_other : choice.description_en}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <span className="text-sm text-gray-500 font-bold">
                                                                 {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {lang === 'ar' ? 'ج.م' : 'EGP'}
                                                             </span>
@@ -286,9 +293,16 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                                                             )}>
                                                                 {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
                                                             </div>
-                                                            <span className={clsx("font-medium", isSelected ? "text-primary" : "text-gray-700")}>
-                                                                {lang === 'ar' ? choice.name_ar : choice.name_en}
-                                                            </span>
+                                                            <div className="flex flex-col">
+                                                                <span className={clsx("font-medium", isSelected ? "text-primary" : "text-gray-700")}>
+                                                                    {lang === 'ar' ? choice.name_ar : (lang === 'ru' ? (choice.name_other || choice.name_en) : choice.name_en)}
+                                                                </span>
+                                                                {(lang === 'ar' ? choice.description_ar : lang === 'ru' ? choice.description_other : choice.description_en) && (
+                                                                    <span className="text-[10px] text-gray-400 mt-0.5">
+                                                                        {lang === 'ar' ? choice.description_ar : lang === 'ru' ? choice.description_other : choice.description_en}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                         <span className={clsx("font-bold", isSelected ? "text-primary" : "text-gray-500")}>
                                                             {group.is_price_replacement ? '' : '+'}{choice.price_modifier} {lang === 'ar' ? 'ج.م' : 'EGP'}

@@ -209,6 +209,17 @@ export default function Menu() {
                                         image={item.image_url || `https://source.unsplash.com/random/400x400?food,plate&sig=${item.id}`}
                                         hasOptions={item.options && item.options.length > 0}
                                         minPrice={calculateMinPrice(item)}
+                                        maxPrice={(() => {
+                                            if (!item.options || item.options.length === 0) return 0;
+                                            const sizeGroup = item.options.find((g: any) => g.is_price_replacement);
+                                            if (sizeGroup && sizeGroup.choices?.length > 0) {
+                                                const validPrices = sizeGroup.choices
+                                                    .map((c: any) => c.price_modifier)
+                                                    .filter((p: number) => p > 0);
+                                                return validPrices.length > 0 ? Math.max(...validPrices) : 0;
+                                            }
+                                            return 0;
+                                        })()}
                                         onAdd={() => setSelectedItem(item)}
                                         isAvailable={item.is_available} // Pass availability
                                         badgeText={lang === 'ar' ? item.badge_text_ar : (item.badge_text_en || item.badge_text_ar)}

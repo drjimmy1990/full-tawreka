@@ -4,6 +4,10 @@ import { Helmet } from 'react-helmet-async';
 import { api } from './lib/api';
 import { useSettingsStore } from './store';
 
+// Components
+import ScrollToTop from './components/ScrollToTop';
+import FloatingWhatsApp from './components/FloatingWhatsApp';
+
 // Pages
 import Landing from './pages/Landing';
 import Menu from './pages/Menu';
@@ -16,7 +20,6 @@ import PaymentFailed from './pages/PaymentFailed';
 
 function App() {
     const { setSettings, getLocalizedSetting, getSetting } = useSettingsStore();
-    // const { branch } = useLocationStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +85,8 @@ function App() {
             </Helmet>
 
             <BrowserRouter>
+                <ScrollToTop />
+                <FloatingWhatsApp />
                 <Routes>
                     {/* Landing - Service Selection */}
                     <Route path="/" element={<Landing />} />

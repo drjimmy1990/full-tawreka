@@ -134,6 +134,7 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'رجوع',
         'common.currency': 'ج.م',
         'common.minutes': 'دقيقة',
+        'common.back_to_menu': 'الرجوع للقائمة',
         'common.no_data': 'لا توجد بيانات',
 
         // Footer
@@ -288,6 +289,7 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'Back',
         'common.currency': 'EGP',
         'common.minutes': 'min',
+        'common.back_to_menu': 'Back to Menu',
         'common.no_data': 'No data available',
 
         // Footer
@@ -426,6 +428,7 @@ const translations: Record<string, Record<string, string>> = {
         'common.back': 'Назад',
         'common.currency': 'EGP',
         'common.minutes': 'мин',
+        'common.back_to_menu': 'Вернуться в меню',
     },
 };
 

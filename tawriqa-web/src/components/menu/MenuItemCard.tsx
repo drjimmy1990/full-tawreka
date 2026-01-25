@@ -12,9 +12,10 @@ interface MenuItemProps {
     onAdd: () => void;
     isAvailable?: boolean; // New Prop
     badgeText?: string; // New Prop for Badge
+    maxPrice?: number; // New Prop for Price Range
 }
 
-export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice, isAvailable, badgeText }: MenuItemProps) {
+export default function MenuItemCard({ name, description, price, image, onAdd, hasOptions, minPrice, maxPrice, isAvailable, badgeText }: MenuItemProps) {
     const { t } = useTranslation();
 
     // Default to true if undefined
@@ -34,13 +35,6 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
 
             {/* Image Container */}
             <div className="w-28 h-28 bg-gray-100 rounded-xl shrink-0 overflow-hidden relative">
-                {/* Badge Overlay */}
-                {badgeText && available && (
-                    <div className="absolute top-0 right-0 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-xl shadow-sm">
-                        {badgeText}
-                    </div>
-                )}
-
                 <img
                     src={image}
                     alt={name}
@@ -51,14 +45,28 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
             {/* Content Container */}
             <div className="flex-1 flex flex-col justify-between py-1">
                 <div>
-                    <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-primary transition-colors">{name}</h3>
+                    <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-primary transition-colors">{name}</h3>
+                        {badgeText && available && (
+                            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm whitespace-nowrap shrink-0 mt-1">
+                                {badgeText}
+                            </span>
+                        )}
+                    </div>
                     <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{description}</p>
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
                     <span className="font-bold text-lg text-primary">
                         {hasOptions && <span className="text-xs font-normal opacity-70 ltr:mr-1 rtl:ml-1">{t('menu.from')}</span>}
-                        {minPrice || price} <span className="text-xs font-normal text-gray-400">{t('common.currency')}</span>
+                        {minPrice && maxPrice && maxPrice > minPrice ? (
+                            <>
+                                {minPrice} - {maxPrice}
+                            </>
+                        ) : (
+                            minPrice || price
+                        )}
+                        <span className="text-xs font-normal text-gray-400 ltr:ml-1 rtl:mr-1">{t('common.currency')}</span>
                     </span>
 
                     <button

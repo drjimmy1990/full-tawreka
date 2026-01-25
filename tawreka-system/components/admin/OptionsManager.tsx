@@ -9,6 +9,9 @@ interface OptionChoice {
     name_ar: string;
     name_en?: string;
     name_other?: string;
+    description_ar?: string;  // NEW
+    description_en?: string;  // NEW
+    description_other?: string; // NEW
     price_modifier: number;
     is_available: boolean;
 }
@@ -116,6 +119,9 @@ const OptionsManager: React.FC = () => {
             name_ar: formData.get('name_ar') as string,
             name_en: formData.get('name_en') as string,
             name_other: formData.get('name_other') as string,
+            description_ar: formData.get('description_ar') as string, // NEW
+            description_en: formData.get('description_en') as string, // NEW
+            description_other: formData.get('description_other') as string, // NEW
             price_modifier: parseFloat(formData.get('price_modifier') as string) || 0,
             is_available: true
         };
@@ -138,6 +144,43 @@ const OptionsManager: React.FC = () => {
         } catch (err) {
             alert('Error deleting choice');
         }
+    };
+
+    const handleMoveChoice = async (group: OptionGroup, index: number, direction: number) => {
+        if (!group.option_choices) return;
+        const newChoices = [...group.option_choices];
+        if (index + direction < 0 || index + direction >= newChoices.length) return;
+
+        const itemA = newChoices[index];
+        const itemB = newChoices[index + direction];
+
+        // Swap order in array
+        newChoices[index] = itemB;
+        newChoices[index + direction] = itemA;
+
+        // Update local state (Optimistic)
+        const updatedGroups = groups.map(g => {
+            if (g.id === group.id) {
+                return { ...g, option_choices: newChoices };
+            }
+            return g;
+        });
+        setGroups(updatedGroups);
+
+        // Calculate sort orders
+        // Note: We update both to ensure consistency, using their new array indices as base
+        // But better to swap their existing sort_orders if they exist, or assign based on index
+
+        // Actually, best specific persistence:
+        if (itemA.id && itemB.id) {
+            // We need valid sort orders. If they are 0/null, we might need a full re-sort.
+            // Let's assume we just want to execute the swap.
+            // We will use the ARRAY INDEX as the truth for sort_order.
+
+            await api.updateOptionChoiceSortOrder(itemA.id, index + direction); // New pos
+            await api.updateOptionChoiceSortOrder(itemB.id, index); // New pos
+        }
+        // If there's an error, loadGroups() will revert the optimistic update.
     };
 
     const getName = (item: any) => {
@@ -240,7 +283,7 @@ const OptionsManager: React.FC = () => {
                                     </div>
                                     {group.option_choices && group.option_choices.length > 0 ? (
                                         <div className="space-y-2">
-                                            {group.option_choices.map(choice => (
+                                            {group.option_choices.map((choice, index) => (
                                                 <div key={choice.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
                                                     <div className="flex items-center gap-3">
                                                         <span className="font-medium text-gray-800">{getName(choice)}</span>
@@ -249,6 +292,30 @@ const OptionsManager: React.FC = () => {
                                                         </span>
                                                     </div>
                                                     <div className="flex gap-1">
+                                                        <div className="flex flex-col mr-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleMoveChoice(group, index, -1);
+                                                                }}
+                                                                className="text-gray-400 hover:text-blue-600 p-0.5"
+                                                                title="Move Up"
+                                                            >
+                                                                <ChevronUp className="w-3 h-3" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleMoveChoice(group, index, 1);
+                                                                }}
+                                                                className="text-gray-400 hover:text-blue-600 p-0.5"
+                                                                title="Move Down"
+                                                            >
+                                                                <ChevronDown className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
                                                         <button onClick={() => openChoiceModal(group.id!, choice)} className="p-1.5 hover:bg-blue-100 text-blue-600 rounded"><Edit className="w-3 h-3" /></button>
                                                         <button onClick={() => handleDeleteChoice(choice.id!)} className="p-1.5 hover:bg-red-100 text-red-600 rounded"><Trash2 className="w-3 h-3" /></button>
                                                     </div>
