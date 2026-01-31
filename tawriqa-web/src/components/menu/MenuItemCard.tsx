@@ -22,7 +22,10 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
     const available = isAvailable !== false;
 
     return (
-        <div className={`group bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-all relative overflow-hidden ${available ? 'hover:shadow-md hover:border-primary/20' : 'opacity-60 grayscale'}`}>
+        <div
+            onClick={available ? onAdd : undefined}
+            className={`group bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-all relative overflow-hidden ${available ? 'hover:shadow-md hover:border-primary/20 cursor-pointer' : 'opacity-60 grayscale'}`}
+        >
 
             {/* Out of Stock Overlay */}
             {!available && (
@@ -70,7 +73,10 @@ export default function MenuItemCard({ name, description, price, image, onAdd, h
                     </span>
 
                     <button
-                        onClick={available ? onAdd : undefined}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (available) onAdd();
+                        }}
                         disabled={!available}
                         className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm transition-all ${available
                             ? 'bg-gray-50 text-primary hover:bg-primary hover:text-white hover:scale-110 active:scale-95'

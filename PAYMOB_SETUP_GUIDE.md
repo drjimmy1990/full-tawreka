@@ -65,45 +65,30 @@ Your Iframe ID: 994937 (or your ID)
 
 ## Step 4: Configure Callback URLs ⚠️ CRITICAL
 
+**You must configure TWO different links.** They do completely different things.
+
+| Link Name in Paymob | What it is | Where it goes | Example Value (Production) |
+|---------------------|------------|---------------|----------------------------|
+| **Transaction Response Callback** | **Frontend Redirect** | Takes customer back to your website after payment. | `https://tawriqa.com/checkout/success` |
+| **Transaction Processed Callback**| **Backend Webhook** | Tells your system payment is Done (Secure). | `https://n8n.tawriqa.com/webhook/paymob-callback` |
+
+### 1. Go to Paymob Dashboard:
 1. Go to **Developers → Payment Integrations**
 2. Click **Edit** on your integration (gear icon)
 3. Go to **Callbacks** tab
-4. Set these URLs:
 
-### For Local Testing (VS Code Port Forward):
-```
-Transaction processed callback: (leave empty for now)
-Transaction response callback: http://127.0.0.1:5173/checkout/success
-```
+### 2. Set the URLs:
 
-### For Production:
-```
-Transaction processed callback: https://your-n8n-webhook-url
-Transaction response callback: https://yourdomain.com/checkout/success
-```
+#### A) Transaction Response Callback (The Redirect)
+*   **Purpose:** Redirects the customer's browser back to your site.
+*   **Development:** `http://localhost:5173/checkout/success`
+*   **Production:** `https://[YOUR_WEBSITE_DOMAIN]/checkout/success`
 
-### 📡 Understanding the Two Callbacks:
-
-| Callback | Type | Purpose |
-|----------|------|---------|
-| **Transaction response** | Browser Redirect | Redirects customer's browser after payment |
-| **Transaction processed** | Server Webhook | Sends POST to your backend for order updates |
-
-#### Transaction Response Callback (Browser Redirect)
-- **What it does**: After payment, redirects customer's browser to this URL
-- **Purpose**: Show customer a success or failed page
-- **Contains**: URL parameters like `?success=true&id=123&amount_cents=5000`
-- **Example**: `http://127.0.0.1:5173/checkout/success?success=true`
-
-#### Transaction Processed Callback (Server Webhook)
-- **What it does**: Paymob sends a POST request to your server
-- **Purpose**: Update order status in database, send notifications
-- **More reliable**: Works even if customer closes browser
-- **Contains**: Full JSON payload with payment details
-- **Use for**: n8n workflow to update order `payment_status` to `paid`
-
-> 💡 **For testing**: You only need the **Transaction response callback**.
-> The **Transaction processed callback** is for production (n8n webhook).
+#### B) Transaction Processed Callback (The Webhook)
+*   **Purpose:** Sends data to your N8N automation to mark order as "PAID" in Supabase.
+*   **Development:** (Usually empty or local tunnel)
+*   **Production:** `https://[YOUR_N8N_DOMAIN]/webhook/paymob-callback`
+    *   *Important: Use the N8N **Production** URL, not the Test URL.*
 
 ---
 

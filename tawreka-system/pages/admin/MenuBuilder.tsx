@@ -181,9 +181,22 @@ const MenuBuilder: React.FC = () => {
         if (!selectedCat) return;
 
         const formData = new FormData(e.target as HTMLFormElement);
+
+        // Calculate sort_order
+        let sortOrder = 0;
+        if (editingItem) {
+            // Preserve existing order
+            sortOrder = editingItem.sort_order ?? 0;
+        } else {
+            // New item: Append to end
+            const maxOrder = items.length > 0 ? Math.max(...items.map(i => i.sort_order || 0)) : -1;
+            sortOrder = maxOrder + 1;
+        }
+
         const itemData = {
             id: editingItem?.id,
             category_id: selectedCat,
+            sort_order: sortOrder,
             // All 3 languages
             name_ar: formData.get('name_ar'),
             name_en: formData.get('name_en'),
