@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Order, OrderStatus } from '../../types';
 import { api } from '../../services/api';
-import { Search, Filter, X, FileText, Loader2 } from 'lucide-react';
+import { Search, Filter, X, FileText, Loader2, Store } from 'lucide-react';
 import { useI18n } from '../../i18n';
 
 const Orders: React.FC = () => {
@@ -10,6 +10,8 @@ const Orders: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPayment, setFilterPayment] = useState<string>('ALL');
+  const [filterBranch, setFilterBranch] = useState<string>('all'); // NEW: Branch Filter
+  const [branches, setBranches] = useState<{ id: number; name: string }[]>([]); // NEW: Branch List
   const [dateRange, setDateRange] = useState<{ start: string, end: string }>({ start: '', end: '' });
   const { t } = useI18n();
 
@@ -18,12 +20,17 @@ const Orders: React.FC = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const data = await api.getOrders(); // Fetch all orders (Admin)
+        const [ordersData, branchesData] = await Promise.all([
+          api.getOrders(), // Fetch all orders
+          api.getBranches() // Fetch all branches
+        ]);
+
         // Sort: Newest first
-        const sorted = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const sorted = ordersData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setOrders(sorted);
+        setBranches(branchesData);
       } catch (error) {
-        console.error("Failed to load orders", error);
+        console.error("Failed to load data", error);
       } finally {
         setLoading(false);
       }
@@ -48,6 +55,11 @@ const Orders: React.FC = () => {
         ? true
         : order.status === filterStatus;
 
+    // Filter Branch
+    const matchesBranch = filterBranch === 'all'
+      ? true
+      : order.branch_id === parseInt(filterBranch);
+
     let matchesDate = true;
     if (dateRange.start) {
       const start = new Date(dateRange.start).setHours(0, 0, 0, 0);
@@ -68,7 +80,7 @@ const Orders: React.FC = () => {
       }
     }
 
-    return matchesSearch && matchesStatus && matchesDate && matchesPayment;
+    return matchesSearch && matchesStatus && matchesDate && matchesPayment && matchesBranch;
   });
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -133,6 +145,23 @@ const Orders: React.FC = () => {
                 <option value="done">{t('status.done')}</option>
                 <option value="cancelled">{t('status.cancelled')}</option>
                 <option value="pending">{t('status.pending')}</option>
+              </select>
+            </div>
+
+            {/* Branch Filter */}
+            <div className="relative min-w-[200px]">
+              <Store className="absolute right-3 rtl:right-3 rtl:left-auto ltr:left-3 ltr:right-auto top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              <select
+                className="w-full ltr:pl-10 ltr:pr-4 rtl:pr-10 rtl:pl-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 appearance-none shadow-sm cursor-pointer hover:bg-white transition-colors"
+                value={filterBranch}
+                onChange={e => setFilterBranch(e.target.value)}
+              >
+                <option value="all">{t('nav.branches') || 'All Branches'}</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -232,8 +261,8 @@ const Orders: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span className={`px-2 py-1 rounded text-xs font-bold ${(order.payment_method || '').includes('card')
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'bg-green-100 text-green-700'
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'bg-green-100 text-green-700'
                     }`}>
                     {(order.payment_method || 'cash').includes('card') ? '💳 Card' : '💵 Cash'}
                   </span>

@@ -631,6 +631,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                           <div className="flex flex-col">
                             <span className="text-gray-800 font-medium leading-tight">{item.name}</span>
                             {item.size && <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded-md w-fit mt-0.5 border border-blue-100">{item.size}</span>}
+                            {item.options && item.options.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {item.options.map((opt: any, i) => (
+                                  <span key={i} className="text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                                    + {typeof opt === 'string' ? opt : opt.name}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </li>
@@ -903,6 +912,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                                 <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit mt-1 border border-blue-100">
                                   {item.size}
                                 </span>
+                              )}
+                              {item.options && item.options.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {item.options.map((opt: any, i) => (
+                                    <span key={i} className="text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                                      + {typeof opt === 'string' ? opt : opt.name}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
                             </div>
                           </div>
