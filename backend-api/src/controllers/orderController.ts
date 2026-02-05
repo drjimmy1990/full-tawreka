@@ -168,9 +168,12 @@ export const createCustomerOrder = async (req: Request, res: Response) => {
             const optionsPrice = item.options?.reduce((sum: number, opt: any) => sum + (opt.price || 0), 0) || 0;
             const totalPrice = basePrice + optionsPrice;
 
-            // Extract size from options (groupId 4 is typically size)
-            const sizeOption = item.options?.find((opt: any) => opt.groupId === 4);
-            const size = sizeOption?.name || null;
+            // Extract size: Priority to explicit 'size' field, fallback to legacy options check (Group ID 4)
+            let size = item.size || null;
+            if (!size) {
+                const sizeOption = item.options?.find((opt: any) => opt.groupId === 4);
+                size = sizeOption?.name || null;
+            }
 
             return {
                 qty: item.quantity || item.qty || 1,

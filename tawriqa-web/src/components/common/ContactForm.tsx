@@ -43,6 +43,7 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
         setIsSubmitting(true);
         try {
             if (onSubmit) {
+                // Keep existing prop logic just in case
                 const success = await onSubmit(formData);
                 if (success) {
                     setIsSuccess(true);
@@ -51,12 +52,38 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
                     setError(t('common.error'));
                 }
             } else {
-                // Placeholder: simulate submission
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                setIsSuccess(true);
-                setFormData({ name: '', phone: '', email: '', message: '' });
+                // n8n Webhook Integration
+                const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+
+                if (webhookUrl) {
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            timestamp: new Date().toISOString(),
+                            source: 'tawriqa-web'
+                        }),
+                    });
+
+                    if (response.ok) {
+                        setIsSuccess(true);
+                        setFormData({ name: '', phone: '', email: '', message: '' });
+                    } else {
+                        throw new Error('Failed to submit');
+                    }
+                } else {
+                    // Fallback simulation if no webhook is simulating
+                    console.warn('VITE_N8N_WEBHOOK_URL is not set');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    setIsSuccess(true);
+                    setFormData({ name: '', phone: '', email: '', message: '' });
+                }
             }
         } catch (err) {
+            console.error('Contact form error:', err);
             setError(t('common.error'));
         } finally {
             setIsSubmitting(false);

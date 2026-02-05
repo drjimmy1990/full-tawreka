@@ -114,19 +114,33 @@ export default function ProductModal({ item, onClose, initialSelections, initial
 
         // Build selected options array for cart
         const selectedOptionsList: any[] = [];
+        let selectedSize: string | undefined = undefined;
+
         Object.keys(selections).forEach(gId => {
             const groupId = parseInt(gId);
             const group = item.options?.find((g: MenuOptionGroup) => g.id === groupId);
             const choices = group?.choices || group?.option_choices || [];
+
+            // Check if this group is a "Size" group
+            const isSizeGroup = group?.name_en?.toLowerCase().includes('size') || group?.name_ar?.includes('الحجم');
+
             selections[groupId].forEach(cId => {
                 const choice = choices.find((c: MenuOptionChoice) => c.id === cId);
                 if (choice) {
-                    selectedOptionsList.push({
-                        groupId,
-                        choiceId: cId,
-                        name: lang === 'ar' ? choice.name_ar : choice.name_en,
-                        price: choice.price_modifier
-                    });
+                    const choiceName = lang === 'ar' ? choice.name_ar : choice.name_en;
+
+                    // If it's a size group, set it as the item's size
+                    if (isSizeGroup) {
+                        selectedSize = choiceName;
+                    } else {
+                        // Otherwise, add to options list
+                        selectedOptionsList.push({
+                            groupId,
+                            choiceId: cId,
+                            name: choiceName,
+                            price: choice.price_modifier
+                        });
+                    }
                 }
             });
         });
@@ -138,6 +152,7 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                 basePrice: item.current_price || item.base_price,
                 quantity,
                 notes,
+                size: selectedSize,
                 totalPrice: calculateTotal() / quantity,
                 selectedOptions: selectedOptionsList,
                 image: item.image_url
@@ -149,6 +164,7 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                 basePrice: item.current_price || item.base_price,
                 quantity,
                 notes,
+                size: selectedSize,
                 totalPrice: calculateTotal() / quantity,
                 selectedOptions: selectedOptionsList,
                 image: item.image_url

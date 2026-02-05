@@ -96,5 +96,6 @@ export interface CartItem {
     totalPrice: number;
     quantity: number;
     notes?: string;
+    size?: string; // Extracted distinct size selection
     selectedOptions: SelectedOption[];
 }

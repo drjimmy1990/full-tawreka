@@ -56,13 +56,20 @@ export default function CartDrawer({ isOpen, onClose, onEditItem }: CartDrawerPr
                                     </div>
 
                                     {/* Options Display */}
-                                    <div className="text-xs text-gray-500 space-y-0.5">
-                                        {item.selectedOptions?.map((opt, i) => (
-                                            <span key={i} className="flex justify-between">
-                                                <span>• {opt.name}</span>
-                                                {opt.price > 0 && <span className="text-gray-400">+{opt.price}</span>}
+                                    <div className="flex flex-col gap-1 mt-1">
+                                        {item.size && (
+                                            <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded-md w-fit border border-blue-100">
+                                                {item.size}
                                             </span>
-                                        ))}
+                                        )}
+                                        <div className="text-xs text-gray-500 space-y-0.5">
+                                            {item.selectedOptions?.map((opt, i) => (
+                                                <span key={i} className="flex justify-between">
+                                                    <span>• {opt.name}</span>
+                                                    {opt.price > 0 && <span className="text-gray-400">+{opt.price}</span>}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
