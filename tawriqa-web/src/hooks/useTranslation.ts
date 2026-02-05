@@ -26,6 +26,11 @@ const translations: Record<string, Record<string, string>> = {
         'landing.about': 'من نحن',
         'landing.contact_us': 'اتصل بنا',
         'landing.order_now': 'اطلب دلوقتى',
+
+        // SEO / Meta
+        'meta.title': 'توريقة | Tawriqa | توريقة للفطير المصري - Feteer & Pies',
+        'meta.description': 'أهلاً بيك في توريقة - مطعم مصري بيقدملك الفطير المصري على أصوله، طبقات مقرمشة ومحشية | Welcome to Tawriqa - an Egyptian restaurant that brings you authentic feteer with crispy layers and delicious fillings. بين الطبقات.. حكايات',
+
         'header.branches': 'فروعنا',
         'header.about': 'من نحن',
         'about.order_now': 'اطلب الأن',
@@ -181,6 +186,11 @@ const translations: Record<string, Record<string, string>> = {
         'landing.about': 'About Us',
         'landing.contact_us': 'Contact Us',
         'landing.order_now': 'Order Now',
+
+        // SEO / Meta
+        'meta.title': 'Tawriqa | Authentic Egyptian Feteer & Pies',
+        'meta.description': 'Welcome to Tawriqa - an Egyptian restaurant that brings you authentic feteer with crispy layers and delicious fillings. Experince the taste of Egypt.',
+
         'header.branches': 'Branches',
         'header.about': 'About Us',
         'about.order_now': 'Order Now',
@@ -324,7 +334,11 @@ const translations: Record<string, Record<string, string>> = {
         'landing.contact_us': 'Свяжитесь с нами',
         'landing.order_now': 'Заказать сейчас',
 
-        // Location
+        // SEO / Meta
+        'meta.title': 'Tawriqa | Египетский Фитир и Пироги',
+        'meta.description': 'Добро пожаловать в Tawriqa - египетский ресторан, где подают настоящий фитир с хрустящими слоями и вкусными начинками.',
+
+        'header.branches': 'Филиалы',
         'location.select_branch': 'Выберите филиал',
         'location.select_city': 'Выберите город',
         'location.select_area': 'Выберите район',

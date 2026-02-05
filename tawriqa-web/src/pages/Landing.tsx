@@ -201,7 +201,7 @@ export default function Landing() {
                             </div>
                             <h3 className="font-bold text-xl mb-2">{t('contact.call_title')}</h3>
                             <p className="text-gray-400 text-sm mb-6">{t('contact.call_subtitle')}</p>
-                            <a href="tel:+20248832036" className="text-2xl font-bold text-white hover:text-secondary transition-colors">+20 24 883 2036</a>
+                            <a href="tel:+20248832036" dir="ltr" className="text-2xl font-bold text-white hover:text-secondary transition-colors">+20 24 883 2036</a>
                         </div>
 
                         {/* Card 2: Social Media */}

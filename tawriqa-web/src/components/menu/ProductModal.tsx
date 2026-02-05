@@ -73,6 +73,19 @@ export default function ProductModal({ item, onClose, initialSelections, initial
         return total * quantity;
     };
 
+    // Check if all required options are fulfilled
+    const checkRequiredOptions = () => {
+        if (!item.options || item.options.length === 0) return true;
+        return item.options.every((group: MenuOptionGroup) => {
+            const minReq = Number(group.min_selection) || 0;
+            if (minReq === 0) return true;
+            const selectedCount = (selections[group.id] || []).length;
+            return selectedCount >= minReq;
+        });
+    };
+
+    const canAddToCart = checkRequiredOptions();
+
     const handleOptionToggle = (groupId: number, choiceId: number, maxSelection: number) => {
         setSelections(prev => {
             const current = prev[groupId] || [];
@@ -94,10 +107,7 @@ export default function ProductModal({ item, onClose, initialSelections, initial
 
     const handleAddToCart = () => {
         // Validation: Check required groups
-        const missingRequired = item.options?.filter((g: MenuOptionGroup) =>
-            g.min_selection > 0 && (!selections[g.id] || selections[g.id].length < g.min_selection)
-        );
-        if (missingRequired && missingRequired.length > 0) {
+        if (!canAddToCart) {
             alert(lang === 'ar' ? 'يرجى اختيار الخيارات المطلوبة' : 'Please select required options');
             return;
         }
@@ -360,7 +370,11 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                         </div>
                     </div>
 
-                    <Button onClick={handleAddToCart} className="w-full py-4 gap-2">
+                    <Button
+                        onClick={handleAddToCart}
+                        className="w-full py-4 gap-2"
+                        disabled={!canAddToCart}
+                    >
                         {editingCartItemId ? (
                             <>
                                 <ShoppingBag className="w-5 h-5" />
@@ -373,6 +387,11 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                             </>
                         )}
                     </Button>
+                    {!canAddToCart && (
+                        <p className="text-xs text-center text-red-500 mt-2">
+                            {lang === 'ar' ? '⚠️ يرجى اختيار جميع الخيارات المطلوبة' : '⚠️ Please select all required options'}
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
