@@ -75,7 +75,9 @@ export const api = {
       address_text: order.customer_address || order.customer_addresses?.address_text || (order.service_type === 'pickup' ? 'Pick Up' : 'Delivery'),
       customer_lat: order.delivery_lat || order.customer_addresses?.latitude,
       customer_lng: order.delivery_lng || order.customer_addresses?.longitude,
-      branch_name: order.branches?.name || undefined
+      branch_name: order.branches?.name || undefined,
+      // Ensure total_price is resolved (generated column or fallback to 'total' or calculated from items)
+      total_price: order.total_price || order.total || order.items?.reduce((sum: number, item: any) => sum + ((item.price || 0) * (item.qty || 1)), 0) || 0,
     })) as Order[];
   },
 

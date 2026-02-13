@@ -132,15 +132,14 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                     // If it's a size group, set it as the item's size
                     if (isSizeGroup) {
                         selectedSize = choiceName;
-                    } else {
-                        // Otherwise, add to options list
-                        selectedOptionsList.push({
-                            groupId,
-                            choiceId: cId,
-                            name: choiceName,
-                            price: choice.price_modifier
-                        });
                     }
+                    // Always add to options list (including size) so backend gets the price
+                    selectedOptionsList.push({
+                        groupId,
+                        choiceId: cId,
+                        name: choiceName,
+                        price: choice.price_modifier
+                    });
                 }
             });
         });
