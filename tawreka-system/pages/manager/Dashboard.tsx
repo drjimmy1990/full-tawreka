@@ -870,6 +870,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                             </a>
                           )}
                         </div>
+                        {selectedOrder.branch_name && (
+                          <div>
+                            <p className="text-gray-500 text-sm">Branch</p>
+                            <p className="font-bold text-lg text-gray-800">{selectedOrder.branch_name}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
 

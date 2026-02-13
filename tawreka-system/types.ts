@@ -52,6 +52,7 @@ export interface Order {
   id: number;
   daily_seq: number;
   branch_id: number;
+  branch_name?: string;
 
   // Customer Info
   customer_name: string;

@@ -46,7 +46,7 @@ export const api = {
   getOrders: async (branchId?: number): Promise<Order[]> => {
     let query = supabase
       .from('orders')
-      .select('*, customers(full_name, phone_number), customer_addresses(address_text, latitude, longitude)')
+      .select('*, customers(full_name, phone_number), customer_addresses(address_text, latitude, longitude), branches(name)')
       .order('created_at', { ascending: false });
 
     if (branchId) {
@@ -74,7 +74,8 @@ export const api = {
       customer_phone: order.customer_phone || order.customers?.phone_number || 'N/A',
       address_text: order.customer_address || order.customer_addresses?.address_text || (order.service_type === 'pickup' ? 'Pick Up' : 'Delivery'),
       customer_lat: order.delivery_lat || order.customer_addresses?.latitude,
-      customer_lng: order.delivery_lng || order.customer_addresses?.longitude
+      customer_lng: order.delivery_lng || order.customer_addresses?.longitude,
+      branch_name: order.branches?.name || undefined
     })) as Order[];
   },
 
