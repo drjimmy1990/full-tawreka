@@ -111,10 +111,10 @@ export default function Checkout() {
                 items: items.map(item => ({
                     item_id: item.menuItemId,
                     quantity: item.quantity,
-                    unit_price: item.basePrice,
+                    unit_price: item.totalPrice, // Per-unit total (already includes base + options/replacements)
                     notes: item.notes,
                     size: item.size, // Include extracted size
-                    options: item.selectedOptions
+                    options: item.selectedOptions.map(opt => ({ ...opt, price: 0 })) // Prices already in unit_price
                 }))
             };
 
