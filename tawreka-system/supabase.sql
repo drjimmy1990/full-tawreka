@@ -1062,3 +1062,5 @@ WITH
 
 -- 2. Force refresh schema cache (Critical step)
 NOTIFY pgrst, 'reload schema';
+
+ALTER TYPE user_role ADD VALUE 'operations_manager';

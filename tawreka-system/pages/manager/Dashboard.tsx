@@ -8,6 +8,8 @@ import { supabase } from '../../lib/supabase';
 // Helper to play sound safely
 let audioEnabled = false;
 let audioElement: HTMLAudioElement | null = null;
+// Track which orders have already triggered a notification sound
+const notifiedOrderIds = new Set<number>();
 
 const initializeAudio = () => {
   if (!audioEnabled) {
@@ -57,6 +59,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const isOpsManager = !user.branch_id; // operations_manager has no branch_id
 
   // Connection Status
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'reconnecting'>('connected');
@@ -78,12 +81,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
 
   // Load Data Function
   const fetchOrders = async (isUpdate = false) => { // isUpdate param is now unused for sound
-    if (!user.branch_id) return;
     try {
-      const data = await api.getOrders(user.branch_id);
+      // Operations manager (no branch_id) sees ALL orders; branch_manager sees only their branch
+      const data = await api.getOrders(user.branch_id || undefined);
       const branchOrders = data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       setOrders(branchOrders);
-      // Removed playNotificationSound() from here entirely
     } catch (err) {
       console.error("Dashboard Error:", err);
     } finally {
@@ -96,51 +98,48 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
     fetchOrders();
 
     let reconnectTimeout: NodeJS.Timeout;
+    // Build realtime subscription config
+    const realtimeConfig: any = {
+      event: '*',
+      schema: 'public',
+      table: 'orders',
+    };
+    // Only filter by branch if user is a branch_manager (not operations_manager)
+    if (user.branch_id) {
+      realtimeConfig.filter = `branch_id=eq.${user.branch_id}`;
+    }
+
     let currentChannel = supabase
       .channel('kds-realtime')
       .on(
         'postgres_changes',
-        {
-          event: '*', // Listen to everything
-          schema: 'public',
-          table: 'orders',
-          filter: `branch_id=eq.${user.branch_id}`
-        },
+        realtimeConfig,
         (payload) => {
-          // LOGIC: Play sound ONLY if order will be VISIBLE in kitchen
+          // LOGIC: Play sound ONLY for genuinely NEW orders appearing in kitchen
           let shouldPlaySound = false;
+          const orderId = (payload.new as any)?.id;
 
-          console.log('🔔 Realtime event:', payload.eventType, (payload.new as any)?.id, (payload.new as any)?.payment_status);
+          console.log('🔔 Realtime event:', payload.eventType, orderId, (payload.new as any)?.payment_status);
 
           if (payload.eventType === 'INSERT') {
             // Only alert for CASH orders (they appear immediately)
-            // Card orders wait for payment confirmation
             const paymentMethod = payload.new?.payment_method;
-            if (paymentMethod === 'cash') {
+            if (paymentMethod === 'cash' && orderId && !notifiedOrderIds.has(orderId)) {
               shouldPlaySound = true;
-              console.log('✅ Cash order - playing sound');
+              notifiedOrderIds.add(orderId);
+              console.log('✅ New cash order - playing sound');
             }
           }
           else if (payload.eventType === 'UPDATE') {
             const newPaymentStatus = payload.new?.payment_status;
-            const newPaymentMethod = payload.new?.payment_method;
-            const oldPaymentStatus = payload.old?.payment_status;
-            const oldPending = payload.old?.modification_pending;
-            const newPending = payload.new?.modification_pending;
-            const oldStatus = payload.old?.status;
-            const newStatus = payload.new?.status;
 
-            console.log('📋 UPDATE details:', { newPaymentStatus, newPaymentMethod, oldPaymentStatus });
-
-            // Payment just confirmed - order now visible!
-            // Alert when: status changes to 'paid' (and it wasn't 'paid' before)
-            if (newPaymentStatus === 'paid' && oldPaymentStatus !== 'paid') {
+            // Card payment just confirmed → order now visible for the first time
+            // Only play if we haven't already notified for this order
+            if (newPaymentStatus === 'paid' && orderId && !notifiedOrderIds.has(orderId)) {
               shouldPlaySound = true;
+              notifiedOrderIds.add(orderId);
               console.log('✅ Payment confirmed - playing sound');
             }
-
-            // MODIFICATION & CANCELLATION ALERTS REMOVED as per user request
-            // Only strictly NEW orders (Insert Cash or Update->Paid) play sound.
           }
 
           if (shouldPlaySound) {
@@ -183,35 +182,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
         .channel('kds-realtime-' + Date.now())
         .on(
           'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'orders',
-            filter: `branch_id=eq.${user.branch_id}`
-          },
+          realtimeConfig,
           (payload) => {
-            // LOGIC: Play sound ONLY if order will be VISIBLE in kitchen
             let shouldPlaySound = false;
+            const orderId = (payload.new as any)?.id;
             if (payload.eventType === 'INSERT') {
-              // Only alert for CASH orders
               const paymentMethod = payload.new?.payment_method;
-              if (paymentMethod === 'cash') {
+              if (paymentMethod === 'cash' && orderId && !notifiedOrderIds.has(orderId)) {
                 shouldPlaySound = true;
+                notifiedOrderIds.add(orderId);
               }
             } else if (payload.eventType === 'UPDATE') {
               const newPaymentStatus = payload.new?.payment_status;
-              const newPaymentMethod = payload.new?.payment_method;
-              const oldPaymentStatus = payload.old?.payment_status;
-              const oldPending = payload.old?.modification_pending;
-              const newPending = payload.new?.modification_pending;
-              const oldStatus = payload.old?.status;
-              const newStatus = payload.new?.status;
-
-              // Payment just confirmed
-              if (newPaymentStatus === 'paid' && oldPaymentStatus !== 'paid') {
+              if (newPaymentStatus === 'paid' && orderId && !notifiedOrderIds.has(orderId)) {
                 shouldPlaySound = true;
+                notifiedOrderIds.add(orderId);
               }
-              // MODIFICATION & CANCELLATION ALERTS REMOVED
             }
             if (shouldPlaySound) {
               playNotificationSound();
@@ -607,6 +593,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                           : (language === 'ar' ? 'غير مدفوع' : 'UNPAID')
                         }
                       </span>
+
+                      {/* BRANCH BADGE (Only for Operations Manager) */}
+                      {isOpsManager && order.branch_name && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide flex items-center gap-1 border bg-purple-50 text-purple-700 border-purple-100">
+                          🏪 {order.branch_name}
+                        </span>
+                      )}
                     </div>
                   </div>
 

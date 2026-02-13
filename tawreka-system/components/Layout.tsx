@@ -16,7 +16,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, activePage, onNavigate, connectionStatus = 'connected' }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   // FIX: Compare with string literal instead of Enum
-  const isManager = user.role === 'branch_manager';
+  const isManager = user.role === 'branch_manager' || user.role === 'operations_manager';
   const { t, toggleLanguage, language, dir } = useI18n();
 
   // We disabled dummy data generation in the API, so this is just a placeholder or can be removed
@@ -112,7 +112,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, activePage, o
             {isSidebarOpen && (
               <div className="overflow-hidden">
                 <p className="text-sm font-medium truncate">{user.full_name}</p>
-                <p className="text-xs text-gray-500 truncate">{isManager ? t('user.manager') : t('user.admin')}</p>
+                <p className="text-xs text-gray-500 truncate">{user.role === 'operations_manager' ? (language === 'ar' ? 'مدير العمليات' : 'Ops Manager') : isManager ? t('user.manager') : t('user.admin')}</p>
               </div>
             )}
           </div>

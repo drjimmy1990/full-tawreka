@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Order, OrderStatus, User } from '../../types';
 import { api } from '../../services/api';
-import { Search, Filter, X, ClipboardList, Loader2 } from 'lucide-react';
+import { Search, Filter, X, ClipboardList, Loader2, Eye, Phone, MapPin, Clock, Truck, ShoppingBag } from 'lucide-react';
 import { useI18n } from '../../i18n';
 
 interface HistoryProps {
@@ -15,14 +15,15 @@ const History: React.FC<HistoryProps> = ({ user }) => {
   const [filterStatus, setFilterStatus] = useState<string>('active');
   const [filterPayment, setFilterPayment] = useState<string>('ALL');
   const [dateRange, setDateRange] = useState<{ start: string, end: string }>({ start: '', end: '' });
-  const { t } = useI18n();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { t, language } = useI18n();
 
   useEffect(() => {
     const fetchHistory = async () => {
       setLoading(true);
       try {
-        // Only fetch orders for the logged-in manager's branch
-        const data = await api.getOrders(user.branch_id);
+        // Operations manager (no branch_id) sees ALL orders; branch_manager sees only their branch
+        const data = await api.getOrders(user.branch_id || undefined);
         const sorted = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setOrders(sorted);
       } catch (err) {
@@ -32,10 +33,7 @@ const History: React.FC<HistoryProps> = ({ user }) => {
       }
     };
 
-    // Only run if user has a branch_id (Managers)
-    if (user.branch_id) {
-      fetchHistory();
-    }
+    fetchHistory();
   }, [user.branch_id]);
 
   const filteredOrders = orders.filter(order => {
@@ -44,10 +42,6 @@ const History: React.FC<HistoryProps> = ({ user }) => {
       order.id.toString().includes(searchTerm) ||
       (order.customer_phone || '').includes(searchTerm);
 
-    // Filter logic:
-    // 'active' = pending, accepted, in_kitchen, out_for_delivery (NOT done or cancelled)
-    // 'ALL' = everything
-    // specific status = exact match
     const matchesStatus = filterStatus === 'active'
       ? !['done', 'cancelled'].includes(order.status)
       : filterStatus === 'ALL'
@@ -82,6 +76,9 @@ const History: React.FC<HistoryProps> = ({ user }) => {
       'done': 'bg-green-100 text-green-800 border-green-200',
       'cancelled': 'bg-red-100 text-red-800 border-red-200',
       'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      'accepted': 'bg-blue-100 text-blue-800 border-blue-200',
+      'in_kitchen': 'bg-orange-100 text-orange-800 border-orange-200',
+      'out_for_delivery': 'bg-purple-100 text-purple-800 border-purple-200',
     };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-bold border ${styles[status] || 'bg-gray-100'}`}>
@@ -194,11 +191,12 @@ const History: React.FC<HistoryProps> = ({ user }) => {
               <th className="px-6 py-4">Total</th>
               <th className="px-6 py-4 text-center">Payment</th>
               <th className="px-6 py-4 text-center">Status</th>
+              <th className="px-6 py-4 text-center">{language === 'ar' ? 'تفاصيل' : 'Details'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filteredOrders.map((order) => (
-              <tr key={order.id} className="hover:bg-blue-50/50 transition duration-150 group">
+              <tr key={order.id} className="hover:bg-blue-50/50 transition duration-150 group cursor-pointer" onClick={() => setSelectedOrder(order)}>
                 <td className="px-6 py-4 text-sm font-bold text-gray-900">#{order.id}</td>
                 <td className="px-6 py-4 text-gray-600 text-sm">{new Date(order.created_at).toLocaleDateString()}</td>
                 <td className="px-6 py-4">{order.customer_name}</td>
@@ -206,21 +204,161 @@ const History: React.FC<HistoryProps> = ({ user }) => {
                 <td className="px-6 py-4 font-bold">{order.total_price} {t('common.currency')}</td>
                 <td className="px-6 py-4 text-center">
                   <span className={`px-2 py-1 rounded text-xs font-bold ${(order.payment_method || '').includes('card')
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'bg-green-100 text-green-700'
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'bg-green-100 text-green-700'
                     }`}>
                     {(order.payment_method || 'cash').includes('card') ? '💳 Card' : '💵 Cash'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-center">{getStatusBadge(order.status)}</td>
+                <td className="px-6 py-4 text-center">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); }}
+                    className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
+                    title={language === 'ar' ? 'عرض التفاصيل' : 'View Details'}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
             ))}
             {filteredOrders.length === 0 && (
-              <tr><td colSpan={6} className="px-6 py-16 text-center text-gray-500">No orders found</td></tr>
+              <tr><td colSpan={8} className="px-6 py-16 text-center text-gray-500">No orders found</td></tr>
             )}
           </tbody>
         </table>
       </div>
+
+      {/* ORDER DETAILS MODAL */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-bold text-gray-900">
+                  {language === 'ar' ? 'تفاصيل الطلب' : 'Order Details'} #{selectedOrder.id}
+                </h3>
+                {getStatusBadge(selectedOrder.status)}
+              </div>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Customer Info */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-100">
+                <h4 className="font-bold text-gray-700 text-sm uppercase tracking-wide">{language === 'ar' ? 'معلومات العميل' : 'Customer Info'}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-gray-500 text-xs">{language === 'ar' ? 'الاسم' : 'Name'}</p>
+                    <p className="font-semibold text-gray-800">{selectedOrder.customer_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-xs">{language === 'ar' ? 'الهاتف' : 'Phone'}</p>
+                    <p className="font-semibold text-gray-800 font-mono" dir="ltr">
+                      <Phone className="w-3.5 h-3.5 inline mr-1 text-gray-400" />
+                      {selectedOrder.customer_phone}
+                    </p>
+                  </div>
+                  {selectedOrder.address_text && (
+                    <div className="md:col-span-2">
+                      <p className="text-gray-500 text-xs">{language === 'ar' ? 'العنوان' : 'Address'}</p>
+                      <p className="font-semibold text-gray-800">
+                        <MapPin className="w-3.5 h-3.5 inline mr-1 text-gray-400" />
+                        {selectedOrder.address_text}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Order Meta */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 text-center">
+                  <p className="text-gray-500 text-xs mb-1">{language === 'ar' ? 'نوع الخدمة' : 'Service'}</p>
+                  <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${selectedOrder.service_type === 'delivery' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                    {selectedOrder.service_type === 'delivery' ? <><Truck className="w-3 h-3" /> {language === 'ar' ? 'توصيل' : 'Delivery'}</> : <><ShoppingBag className="w-3 h-3" /> {language === 'ar' ? 'استلام' : 'Pickup'}</>}
+                  </span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 text-center">
+                  <p className="text-gray-500 text-xs mb-1">{language === 'ar' ? 'الدفع' : 'Payment'}</p>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${(selectedOrder.payment_method || '').includes('card') ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                    {(selectedOrder.payment_method || 'cash').includes('card') ? '💳 Card' : '💵 Cash'}
+                  </span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 text-center">
+                  <p className="text-gray-500 text-xs mb-1">{language === 'ar' ? 'الوقت' : 'Time'}</p>
+                  <p className="text-sm font-bold text-gray-800">
+                    <Clock className="w-3.5 h-3.5 inline mr-1 text-gray-400" />
+                    {new Date(selectedOrder.created_at).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+                {selectedOrder.branch_name && (
+                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-100 text-center">
+                    <p className="text-purple-500 text-xs mb-1">{language === 'ar' ? 'الفرع' : 'Branch'}</p>
+                    <p className="text-sm font-bold text-purple-800">🏪 {selectedOrder.branch_name}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <h4 className="font-bold text-gray-700 text-sm uppercase tracking-wide mb-3">{language === 'ar' ? 'الأصناف' : 'Order Items'}</h4>
+                <div className="bg-gray-50 rounded-xl border border-gray-100 divide-y divide-gray-200">
+                  {selectedOrder.items.map((item, idx) => (
+                    <div key={idx} className="p-4 flex justify-between items-start">
+                      <div className="flex items-start gap-3 flex-1">
+                        <span className="bg-white border border-gray-200 w-7 h-7 flex items-center justify-center rounded-lg text-sm font-bold text-gray-700 shadow-sm flex-shrink-0">
+                          {item.qty}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">{item.name}</p>
+                          {item.size && (
+                            <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded-md inline-block mt-1 border border-blue-100">{item.size}</span>
+                          )}
+                          {item.options && item.options.length > 0 && (
+                            <div className="mt-1.5 space-y-0.5">
+                              {item.options.map((opt, oIdx) => (
+                                <p key={oIdx} className="text-xs text-gray-500">
+                                  <span className="text-gray-400">•</span> {opt.choice}
+                                  {opt.price > 0 && <span className="text-green-600 font-medium"> (+{opt.price} {t('common.currency')})</span>}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                          {item.notes && (
+                            <p className="text-xs text-amber-600 mt-1 italic bg-amber-50 px-2 py-1 rounded border border-amber-100">📝 {item.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                      <p className="font-bold text-gray-800 whitespace-nowrap">{item.price} {t('common.currency')}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                  <h4 className="font-bold text-amber-700 text-sm mb-1">📝 {language === 'ar' ? 'ملاحظات' : 'Notes'}</h4>
+                  <p className="text-amber-800 text-sm">{selectedOrder.notes}</p>
+                </div>
+              )}
+
+              {/* Total */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-4 flex justify-between items-center text-white">
+                <span className="font-bold text-lg">{language === 'ar' ? 'الإجمالي' : 'Total'}</span>
+                <span className="text-2xl font-black">{selectedOrder.total_price} {t('common.currency')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

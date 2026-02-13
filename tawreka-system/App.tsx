@@ -29,7 +29,7 @@ const AppContent: React.FC = () => {
         const lastPage = localStorage.getItem('rms_last_page');
         if (lastPage) {
           setCurrentPage(lastPage);
-        } else if (parsedUser.role === 'branch_manager') {
+        } else if (parsedUser.role === 'branch_manager' || parsedUser.role === 'operations_manager') {
           setCurrentPage('manager_dashboard');
         } else {
           setCurrentPage('admin_analytics');
@@ -47,7 +47,7 @@ const AppContent: React.FC = () => {
     localStorage.setItem('rms_user_session', JSON.stringify(loggedInUser));
 
     // FIX: String comparison
-    const defaultPage = loggedInUser.role === 'branch_manager' ? 'manager_dashboard' : 'admin_analytics';
+    const defaultPage = (loggedInUser.role === 'branch_manager' || loggedInUser.role === 'operations_manager') ? 'manager_dashboard' : 'admin_analytics';
     setCurrentPage(defaultPage);
     localStorage.setItem('rms_last_page', defaultPage);
   };
@@ -77,9 +77,9 @@ const AppContent: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'manager_dashboard':
-        return user.role === 'branch_manager' ? <Dashboard user={user} onConnectionStatusChange={setConnectionStatus} /> : <div>Access Denied</div>;
+        return (user.role === 'branch_manager' || user.role === 'operations_manager') ? <Dashboard user={user} onConnectionStatusChange={setConnectionStatus} /> : <div>Access Denied</div>;
       case 'manager_history':
-        return user.role === 'branch_manager' ? <History user={user} /> : <div>Access Denied</div>;
+        return (user.role === 'branch_manager' || user.role === 'operations_manager') ? <History user={user} /> : <div>Access Denied</div>;
       case 'admin_analytics':
         return user.role === 'super_admin' ? <Analytics /> : <div>Access Denied</div>;
       case 'admin_branches':
@@ -95,7 +95,7 @@ const AppContent: React.FC = () => {
       case 'admin_gallery':
         return user.role === 'super_admin' ? <GalleryManager /> : <div>Access Denied</div>;
       default:
-        return user.role === 'branch_manager' ? <Dashboard user={user} onConnectionStatusChange={setConnectionStatus} /> : <Analytics />;
+        return (user.role === 'branch_manager' || user.role === 'operations_manager') ? <Dashboard user={user} onConnectionStatusChange={setConnectionStatus} /> : <Analytics />;
     }
   };
 

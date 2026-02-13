@@ -4,7 +4,7 @@
 
 // We use String Unions instead of Enums for better Supabase compatibility
 export type OrderStatus = 'pending' | 'accepted' | 'in_kitchen' | 'out_for_delivery' | 'done' | 'cancelled';
-export type UserRole = 'super_admin' | 'branch_manager';
+export type UserRole = 'super_admin' | 'branch_manager' | 'operations_manager';
 
 // ==========================================
 // GEOSPATIAL TYPES
