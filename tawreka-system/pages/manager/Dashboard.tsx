@@ -767,8 +767,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                     </h3>
                     <button
                       onClick={() => {
-                        const newItem: OrderItem = { name: "New Item", qty: 1, price: 50 };
-                        setEditItems([...editItems, newItem]);
+                        const newItem: OrderItem = { name: "New Item", qty: 1, price: 0 };
+                        setEditItems([newItem, ...editItems]);
                       }}
                       className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-lg hover:bg-green-100 flex items-center gap-1"
                     >
@@ -802,17 +802,35 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                             }}
                             className="w-full p-2 border rounded bg-white"
                           />
-                          <input
-                            type="text"
-                            placeholder="Size (Optional)"
-                            value={item.size || ''}
-                            onChange={(e) => {
-                              const newArr = [...editItems];
-                              newArr[idx].size = e.target.value;
-                              setEditItems(newArr);
-                            }}
-                            className="w-full p-2 border rounded bg-gray-50 text-sm"
-                          />
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Size (Optional)"
+                              value={item.size || ''}
+                              onChange={(e) => {
+                                const newArr = [...editItems];
+                                newArr[idx].size = e.target.value;
+                                setEditItems(newArr);
+                              }}
+                              className="flex-1 p-2 border rounded bg-gray-50 text-sm"
+                            />
+                            <div className="relative">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                placeholder="Price"
+                                value={item.price || ''}
+                                onChange={(e) => {
+                                  const newArr = [...editItems];
+                                  newArr[idx].price = parseFloat(e.target.value) || 0;
+                                  setEditItems(newArr);
+                                }}
+                                className="w-28 p-2 border rounded bg-green-50 text-sm font-bold text-green-700 text-center"
+                              />
+                              <span className="absolute top-1/2 -translate-y-1/2 text-[10px] text-green-500 font-bold" style={{ [dir === 'rtl' ? 'left' : 'right']: '6px' }}>{t('common.currency')}</span>
+                            </div>
+                          </div>
                         </div>
                         <button
                           onClick={() => setEditItems(editItems.filter((_, i) => i !== idx))}
@@ -948,6 +966,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
             <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
               {isEditing ? (
                 <>
+                  <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg border border-green-200 mr-auto">
+                    <span className="text-sm text-green-600 font-medium">{language === 'ar' ? 'الإجمالي:' : 'Total:'}</span>
+                    <span className="text-lg font-bold text-green-700">
+                      {editItems.reduce((sum, item) => sum + (item.price || 0) * item.qty, 0).toFixed(0)} {t('common.currency')}
+                    </span>
+                  </div>
                   <button
                     onClick={() => setIsEditing(false)}
                     className="px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-200 transition-colors"
