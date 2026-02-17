@@ -54,7 +54,7 @@ const sendBrowserNotification = (orderData?: any) => {
     if (!('Notification' in window)) return;
     if (Notification.permission !== 'granted') return;
 
-    const orderNum = orderData?.daily_sequence_id || orderData?.id || '';
+    const orderNum = orderData?.daily_seq || orderData?.id || '';
     const serviceType = orderData?.service_type === 'delivery' ? '🛵 توصيل' : '🏪 استلام';
     const customerName = orderData?.customer_name || '';
 
@@ -764,7 +764,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
             <div className={`p-6 flex justify-between items-start ${getStatusColor(selectedOrder.status)}`}>
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h2 className="text-2xl font-bold">#{selectedOrder.id}</h2>
+                  <h2 className="text-2xl font-bold">#{selectedOrder.daily_seq || selectedOrder.id}</h2>
+                  <span className="text-xs opacity-50 font-mono">ID: {selectedOrder.id}</span>
                   <span className="bg-white/30 px-3 py-1 rounded-full text-sm font-bold backdrop-blur-sm">
                     {t(`status.${selectedOrder.status}`)}
                   </span>
@@ -966,9 +967,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                                   {item.size}
                                 </span>
                               )}
-                              {item.options && item.options.length > 0 && (
+                              {item.options && item.options.filter((opt: any) => (typeof opt === 'string' ? opt : opt.name) !== item.size).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {item.options.map((opt: any, i) => (
+                                  {item.options.filter((opt: any) => (typeof opt === 'string' ? opt : opt.name) !== item.size).map((opt: any, i) => (
                                     <span key={i} className="text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
                                       + {typeof opt === 'string' ? opt : opt.name}
                                     </span>
@@ -983,6 +984,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                         </li>
                       ))}
                     </ul>
+
+                    {/* Order Total */}
+                    <div className="mt-4 bg-gray-50 rounded-xl p-4 space-y-2">
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{language === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
+                        <span className="font-mono">{selectedOrder.subtotal?.toFixed(2) || '—'} {t('common.currency')}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{language === 'ar' ? 'التوصيل' : 'Delivery'}</span>
+                        {selectedOrder.service_type === 'pickup' ? (
+                          <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{language === 'ar' ? '🏪 استلام من الفرع' : '🏪 Pickup'}</span>
+                        ) : (
+                          <span className="font-mono">{selectedOrder.delivery_fee?.toFixed(2) || '0.00'} {t('common.currency')}</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2">
+                        <span>{language === 'ar' ? 'الإجمالي' : 'Total'}</span>
+                        <span className="font-mono text-primary">{selectedOrder.total_price?.toFixed(2) || '—'} {t('common.currency')}</span>
+                      </div>
+                      {selectedOrder.payment_method && (
+                        <div className="flex justify-between text-xs text-gray-500 pt-1">
+                          <span>{language === 'ar' ? 'طريقة الدفع' : 'Payment'}</span>
+                          <span className="flex items-center gap-1">
+                            {selectedOrder.payment_method === 'cash' ? '💵' : '💳'}
+                            {selectedOrder.payment_method === 'cash'
+                              ? (language === 'ar' ? 'كاش' : 'Cash')
+                              : (language === 'ar' ? 'بطاقة' : 'Card')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                     {selectedOrder.kitchen_notes && (
                       <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 flex items-start gap-3 mt-4">
