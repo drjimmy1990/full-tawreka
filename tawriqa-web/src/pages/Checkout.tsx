@@ -13,7 +13,8 @@ export default function Checkout() {
     const navigate = useNavigate();
     const { t, lang } = useTranslation();
     const { items, getTotal, clearCart } = useCartStore();
-    const { serviceType, branch, deliveryAddress, deliveryFee, deliveryLat, deliveryLng } = useLocationStore();
+    const { serviceType, branch, deliveryAddress, deliveryFee, deliveryLat, deliveryLng, isBranchOpen } = useLocationStore();
+    const branchOpen = isBranchOpen();
     const { getLocalizedSetting, getSetting } = useSettingsStore();
 
     // Get enabled payment methods from settings
@@ -88,6 +89,7 @@ export default function Checkout() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!branch) return;
+        if (!branchOpen) return;
         if (!validateForm()) return;
         setSubmitting(true);
 
@@ -503,12 +505,32 @@ export default function Checkout() {
                         )
                     }
 
+                    {/* Closed Branch Warning */}
+                    {!branchOpen && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3 animate-fade-in mb-4">
+                            <span className="text-2xl">🔒</span>
+                            <div>
+                                <p className="text-sm font-bold text-red-700">
+                                    {lang === 'ar' ? 'الفرع مغلق حالياً - لا يمكن إتمام الطلب' : 'Branch is currently closed - cannot place order'}
+                                </p>
+                                <p className="text-xs text-red-500">
+                                    {branch?.opening_time && branch?.closing_time
+                                        ? (lang === 'ar'
+                                            ? `مواعيد العمل: ${branch.opening_time} - ${branch.closing_time}`
+                                            : `Working hours: ${branch.opening_time} - ${branch.closing_time}`)
+                                        : (lang === 'ar' ? 'يرجى المحاولة لاحقاً' : 'Please try again later')
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Submit Button */}
                     <Button
                         type="submit"
                         className="w-full py-4 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
                         isLoading={submitting}
-                        disabled={items.length === 0}
+                        disabled={items.length === 0 || !branchOpen}
                     >
                         {submitting ? (
                             <>

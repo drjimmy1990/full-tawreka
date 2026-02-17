@@ -78,26 +78,64 @@ export const useSettingsStore = create<SettingsState>()(
 // ==========================================
 // LOCATION STORE (Branch, Service Type)
 // ==========================================
+interface BranchInfo {
+    id: number;
+    name: string;
+    opening_time?: string;
+    closing_time?: string;
+    is_active?: boolean;
+    is_delivery_available?: boolean;
+}
+
 interface LocationState {
     serviceType: 'delivery' | 'pickup' | null;
-    branch: { id: number; name: string } | null;
+    branch: BranchInfo | null;
 
     // Delivery Details
     deliveryAddress: string;
     deliveryLat: number | null;
     deliveryLng: number | null;
-    deliveryFee: number; // <--- NEW
-    deliveryZone: string; // <--- NEW (e.g., "Smouha Zone A")
+    deliveryFee: number;
+    deliveryZone: string;
 
     setServiceType: (type: 'delivery' | 'pickup') => void;
-    setBranch: (branch: { id: number; name: string }) => void;
+    setBranch: (branch: BranchInfo) => void;
     setDeliveryLocation: (address: string, lat: number, lng: number, fee?: number, zone?: string) => void;
     resetLocation: () => void;
+    isBranchOpen: () => boolean;
+}
+
+/**
+ * Check if current time is within opening_time..closing_time.
+ * Handles overnight ranges (e.g., 10:00 AM → 01:00 AM next day).
+ * Times are in "HH:MM:SS" or "HH:MM" format (24h from Supabase TIME column).
+ */
+export function checkBranchOpen(opening?: string, closing?: string): boolean {
+    if (!opening || !closing) return true; // No hours set → always open
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const parseTime = (t: string): number => {
+        const parts = t.split(':');
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    };
+
+    const openMin = parseTime(opening);
+    const closeMin = parseTime(closing);
+
+    if (closeMin > openMin) {
+        // Normal range (e.g., 10:00 → 22:00)
+        return currentMinutes >= openMin && currentMinutes < closeMin;
+    } else {
+        // Overnight range (e.g., 10:00 → 01:00)
+        return currentMinutes >= openMin || currentMinutes < closeMin;
+    }
 }
 
 export const useLocationStore = create<LocationState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             serviceType: null,
             branch: null,
             deliveryAddress: '',
@@ -109,7 +147,6 @@ export const useLocationStore = create<LocationState>()(
             setServiceType: (type) => set({ serviceType: type }),
             setBranch: (branch) => set({ branch }),
 
-            // Updated setter to accept fee and zone
             setDeliveryLocation: (address, lat, lng, fee = 0, zone = '') => set({
                 deliveryAddress: address,
                 deliveryLat: lat,
@@ -127,6 +164,13 @@ export const useLocationStore = create<LocationState>()(
                 deliveryFee: 0,
                 deliveryZone: ''
             }),
+
+            isBranchOpen: () => {
+                const { branch } = get();
+                if (!branch) return false;
+                if (branch.is_active === false) return false;
+                return checkBranchOpen(branch.opening_time, branch.closing_time);
+            },
         }),
         {
             name: 'tawriqa-location',

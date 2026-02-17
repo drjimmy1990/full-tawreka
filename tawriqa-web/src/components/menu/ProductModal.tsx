@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '../common/Button';
 import useTranslation from '../../hooks/useTranslation';
-import { useCartStore } from '../../store';
+import { useCartStore, useLocationStore } from '../../store';
 import clsx from 'clsx';
 import type { MenuItem, MenuOptionGroup, MenuOptionChoice } from '../../types';
 
@@ -19,6 +19,7 @@ interface ProductModalProps {
 export default function ProductModal({ item, onClose, initialSelections, initialQuantity, initialNotes, editingCartItemId, onUpdate }: ProductModalProps) {
     const { t, lang } = useTranslation();
     const { addToCart } = useCartStore();
+    const branchOpen = useLocationStore(s => s.isBranchOpen)();
 
     // Helper: Get choices from either .choices or .option_choices (API returns option_choices)
     const getChoices = (group: any) => group.choices || group.option_choices || [];
@@ -388,9 +389,14 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                     <Button
                         onClick={handleAddToCart}
                         className="w-full py-4 gap-2"
-                        disabled={!canAddToCart}
+                        disabled={!canAddToCart || !branchOpen}
                     >
-                        {editingCartItemId ? (
+                        {!branchOpen ? (
+                            <>
+                                <span className="text-lg">🔒</span>
+                                {lang === 'ar' ? 'الفرع مغلق حالياً' : 'Branch is closed'}
+                            </>
+                        ) : editingCartItemId ? (
                             <>
                                 <ShoppingBag className="w-5 h-5" />
                                 {lang === 'ar' ? 'تحديث الطلب' : 'Update Order'}
@@ -402,7 +408,7 @@ export default function ProductModal({ item, onClose, initialSelections, initial
                             </>
                         )}
                     </Button>
-                    {!canAddToCart && (
+                    {!canAddToCart && branchOpen && (
                         <p className="text-xs text-center text-red-500 mt-2">
                             {lang === 'ar' ? '⚠️ يرجى اختيار جميع الخيارات المطلوبة' : '⚠️ Please select all required options'}
                         </p>

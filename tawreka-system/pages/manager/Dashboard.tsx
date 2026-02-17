@@ -34,7 +34,6 @@ const playNotificationSound = () => {
     }
 
     console.log('🔔 Playing notification sound...');
-    // Clone and play to allow multiple concurrent sounds
     const sound = audioElement.cloneNode() as HTMLAudioElement;
     sound.volume = 0.7;
     sound.play()
@@ -46,6 +45,37 @@ const playNotificationSound = () => {
       });
   } catch (err) {
     console.error('❌ Audio Error:', err);
+  }
+};
+
+// Browser Push Notification
+const sendBrowserNotification = (orderData?: any) => {
+  try {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+
+    const orderNum = orderData?.daily_sequence_id || orderData?.id || '';
+    const serviceType = orderData?.service_type === 'delivery' ? '🛵 توصيل' : '🏪 استلام';
+    const customerName = orderData?.customer_name || '';
+
+    const notification = new Notification('🔔 طلب جديد!' + (orderNum ? ` #${orderNum}` : ''), {
+      body: `${serviceType}${customerName ? ' - ' + customerName : ''}`,
+      icon: '/logo.png',
+      badge: '/logo.png',
+      tag: 'new-order-' + (orderData?.id || Date.now()),
+      requireInteraction: true,
+    });
+
+    // Focus window when notification is clicked
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+
+    // Auto-close after 10 seconds
+    setTimeout(() => notification.close(), 10000);
+  } catch (err) {
+    console.error('❌ Browser notification error:', err);
   }
 };
 
@@ -144,6 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
 
           if (shouldPlaySound) {
             playNotificationSound();
+            sendBrowserNotification(payload.new);
           }
 
           // Always refresh data to stay synced
@@ -201,6 +232,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
             }
             if (shouldPlaySound) {
               playNotificationSound();
+              sendBrowserNotification(payload.new);
             }
             fetchOrders(false);
           }
@@ -227,6 +259,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
   useEffect(() => {
     const handleFirstClick = () => {
       initializeAudio();
+      // Request browser notification permission
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
       // Remove listener after first click
       document.removeEventListener('click', handleFirstClick);
     };

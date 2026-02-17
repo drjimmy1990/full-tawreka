@@ -15,7 +15,8 @@ export default function Menu() {
     const navigate = useNavigate();
     const { t, lang } = useTranslation();
     const { settings } = useSettingsStore();
-    const { serviceType, branch } = useLocationStore();
+    const { serviceType, branch, isBranchOpen } = useLocationStore();
+    const branchOpen = isBranchOpen();
     const { getItemCount, getTotal } = useCartStore();
 
     // Guard: Redirect to location if no branch selected
@@ -168,6 +169,28 @@ export default function Menu() {
 
             {/* Spacer for Hero Content overlapping */}
             <div className="h-14"></div>
+
+            {/* Closed Branch Banner */}
+            {!branchOpen && (
+                <div className="mx-4 mt-2 mb-2 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3 animate-fade-in">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                        <span className="text-lg">🔒</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-bold text-red-700">
+                            {lang === 'ar' ? 'الفرع مغلق حالياً' : 'Branch is currently closed'}
+                        </p>
+                        <p className="text-xs text-red-500">
+                            {branch?.opening_time && branch?.closing_time
+                                ? (lang === 'ar'
+                                    ? `مواعيد العمل: ${branch.opening_time} - ${branch.closing_time}`
+                                    : `Working hours: ${branch.opening_time} - ${branch.closing_time}`)
+                                : (lang === 'ar' ? 'لا يمكن استقبال طلبات الآن' : 'Orders are not available right now')
+                            }
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Sticky Category Bar - scrolls to sections */}
             <CategoryBar

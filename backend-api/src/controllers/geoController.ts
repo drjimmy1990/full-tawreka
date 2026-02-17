@@ -54,7 +54,9 @@ export const checkCoverage = async (req: Request, res: Response) => {
                         branch_id: branch.id,
                         branch_name: branch.name,
                         zone_name: zone.name,
-                        delivery_fee: zone.delivery_fee
+                        delivery_fee: zone.delivery_fee,
+                        opening_time: (branch as any).opening_time,
+                        closing_time: (branch as any).closing_time,
                     });
                 }
             }
@@ -79,10 +81,12 @@ export const checkCoverage = async (req: Request, res: Response) => {
                     // Found in a delivery-DISABLED branch
                     return res.json({
                         covered: false,
-                        delivery_unavailable: true, // NEW: specific flag
+                        delivery_unavailable: true,
                         branch_id: branch.id,
                         branch_name: branch.name,
                         zone_name: zone.name,
+                        opening_time: (branch as any).opening_time,
+                        closing_time: (branch as any).closing_time,
                         message: 'Delivery temporarily unavailable for this branch'
                     });
                 }
@@ -106,7 +110,7 @@ export const getAvailableZones = async (req: Request, res: Response) => {
     try {
         const { data: branches, error } = await supabase
             .from('branches')
-            .select('id, name, zones, is_delivery_available') // Added is_delivery_available
+            .select('id, name, zones, is_delivery_available, opening_time, closing_time')
             .eq('is_active', true);
 
         if (error || !branches) {
@@ -133,7 +137,9 @@ export const getAvailableZones = async (req: Request, res: Response) => {
                         delivery_fee: zone.delivery_fee,
                         // If your zone JSON has 'city', use it. If not, use Branch Name as group
                         group: zone.city || branch.name,
-                        is_available: isDeliveryAvailable // NEW: indicates if delivery is available
+                        is_available: isDeliveryAvailable, // indicates if delivery is available
+                        opening_time: branch.opening_time || null,
+                        closing_time: branch.closing_time || null,
                     });
                 });
             }
