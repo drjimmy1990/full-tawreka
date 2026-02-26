@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo } from 'react';
 import { api } from '../../services/api';
-import { Save, Upload, Loader2, Palette, Image as ImageIcon, Phone, Globe, X, CreditCard } from 'lucide-react';
+import { Save, Upload, Loader2, Palette, Image as ImageIcon, Phone, Globe, X, CreditCard, MapPin } from 'lucide-react';
 import { useI18n } from '../../i18n';
 
 // Move Section outside to prevent re-creation
@@ -373,6 +373,33 @@ const SiteSettings: React.FC = () => {
                         </div>
                     </div>
                 )}
+            </Section>
+
+            {/* LOCATION SETTINGS */}
+            <Section title={language === 'ar' ? 'إعدادات الموقع' : 'Location Settings'} icon={MapPin}>
+                <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-gray-500 mb-2">
+                        {language === 'ar' ? 'تحديد الموقع الجغرافي' : 'Geolocation Settings'}
+                    </label>
+                    <div className="flex flex-wrap gap-3 mb-4">
+                        <label
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 cursor-pointer select-none transition-all ${settings['enable_map_gps'] !== 'false'
+                                ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-sm'
+                                : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-gray-300'
+                                }`}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={settings['enable_map_gps'] !== 'false'}
+                                onChange={() => handleInputChange('enable_map_gps', settings['enable_map_gps'] !== 'false' ? 'false' : 'true')}
+                                className="w-4 h-4 text-blue-600 rounded"
+                            />
+                            <span className="font-bold">
+                                {language === 'ar' ? '🌍 تفعيل الخريطة والـ GPS في صفحة اختيار الموقع' : '🌍 Enable Map & GPS in Location Page'}
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </Section>
 
             {/* BUSINESS INFO */}

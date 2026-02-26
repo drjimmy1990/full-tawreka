@@ -20,8 +20,9 @@ export default function LocationSelection() {
 
     // UI State - Read mode from URL query param (for Menu button that defaults to pickup)
     const initialMode = searchParams.get('mode') === 'pickup' ? 'pickup' : 'delivery';
+    const isMapEnabled = settings?.enable_map_gps !== 'false';
     const [mode, setMode] = useState<'delivery' | 'pickup'>(initialMode);
-    const [deliveryMethod, setDeliveryMethod] = useState<'map' | 'dropdown'>('map');
+    const [deliveryMethod, setDeliveryMethod] = useState<'map' | 'dropdown'>(isMapEnabled ? 'map' : 'dropdown');
     const [isChecking, setIsChecking] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -121,20 +122,22 @@ export default function LocationSelection() {
                     {mode === 'delivery' ? (
                         <div className="space-y-4">
                             {/* Sub-Tabs for Delivery (Map vs List) */}
-                            <div className="flex justify-center gap-4 mb-2">
-                                <button
-                                    onClick={() => setDeliveryMethod('map')}
-                                    className={clsx("text-xs font-bold px-3 py-1 rounded-full border transition-colors", deliveryMethod === 'map' ? "bg-primary/10 border-primary text-primary" : "border-transparent text-gray-400")}
-                                >
-                                    Map & GPS
-                                </button>
-                                <button
-                                    onClick={() => setDeliveryMethod('dropdown')}
-                                    className={clsx("text-xs font-bold px-3 py-1 rounded-full border transition-colors", deliveryMethod === 'dropdown' ? "bg-primary/10 border-primary text-primary" : "border-transparent text-gray-400")}
-                                >
-                                    Select Area
-                                </button>
-                            </div>
+                            {isMapEnabled && (
+                                <div className="flex justify-center gap-4 mb-2">
+                                    <button
+                                        onClick={() => setDeliveryMethod('map')}
+                                        className={clsx("text-xs font-bold px-3 py-1 rounded-full border transition-colors", deliveryMethod === 'map' ? "bg-primary/10 border-primary text-primary" : "border-transparent text-gray-400")}
+                                    >
+                                        Map & GPS
+                                    </button>
+                                    <button
+                                        onClick={() => setDeliveryMethod('dropdown')}
+                                        className={clsx("text-xs font-bold px-3 py-1 rounded-full border transition-colors", deliveryMethod === 'dropdown' ? "bg-primary/10 border-primary text-primary" : "border-transparent text-gray-400")}
+                                    >
+                                        Select Area
+                                    </button>
+                                </div>
+                            )}
 
                             {deliveryMethod === 'map' ? (
                                 <div className="space-y-4">

@@ -1,8 +1,8 @@
 # n8n Workflow Manual Update Guide
 
-**Objective**: Fix the Missing Size (Blue Badge) and Extra Options (Gray Badges) in the Kitchen Window.
+**Objective**: Fix the Missing Size (Blue Badge) and Extra Options (Gray Badges) in the Kitchen Window by teaching the AI Agent to add sizes & options directly into the final `CONFIRM_ORDER` JSON structure.
 
-To fix this, we need to teach the AI Agent to separate the **Size** (e.g., "Medium", "Roll") from the **Options/Extras** (e.g., "Spicy", "No Cut").
+(You don't need any intermediate "Add to Cart" intents. The AI should simply accumulate the customer's request and output everything in one go when confirming).
 
 ## 1. Locate the Nodes
 Open your n8n workflow editor and find these nodes:
@@ -10,45 +10,39 @@ Open your n8n workflow editor and find these nodes:
 - **AI Agent4** (Location Check Agent)
 - **AI Agent5** (Location Check Agent)
 
+---
+
 ## 2. Update "AI Agent3" (Primary Order Agent)
 
 Double-click **AI Agent3**. Scroll to **System Message**.
 
-### Step A: Update Intent Definitions (Section 6 in Agent3)
+### Step A: Update Intent Definitions (Section 6)
 
 Find **Section 6. INTENT CLASSIFICATION & OUTPUT RULES**.
-Replace the definitions for `ADD_TO_CART`, `CONFIRM_ORDER`, and `MODIFY_ORDER` with these rules. 
-**Note:** `AI Agent3` uses `address_id` in `CONFIRM_ORDER`.
+Ensure your `CONFIRM_ORDER` and `MODIFY_ORDER` rules look exactly like this (Remove any older variants):
 
-#### 3. ADD_TO_CART
+#### 3. CONFIRM_ORDER
 ```text
-3.  **`ADD_TO_CART`**
-    - Trigger: User selects items.
-    - **Logic:** Match items to Menu. Keep cumulative list.
-    - **Output Data:** `items` (Array of objects).
-      - Each item MUST have: `name`, `qty`, `price`.
-      - If applicable: `size` (String, e.g., "Medium", "Roll", "Large").
-      - If applicable: `options` (Array of Strings, e.g., ["Spicy", "No Cut", "Extra Cheese"]).
-```
-
-#### 4. CONFIRM_ORDER
-```text
-4.  **`CONFIRM_ORDER`**
-    - Trigger: User says "Yes" AFTER Revision Phase.
+3.  **`CONFIRM_ORDER`**
+    - Trigger: User lists the items they want to order and says "Yes" to confirm the final order.
+    - **Logic:** Match items to Menu. 
     - Data: 
-      - `items` (Same structure as ADD_TO_CART).
+      - `items` (Array of objects).
+        - Each item MUST have: `name`, `qty`, `price`.
+        - If applicable: `size` (String, e.g., "Medium", "Roll", "Large").
+        - If applicable: `options` (Array of Strings, e.g., ["Spicy", "No Cut", "Extra Cheese"]).
       - `address_id` (Integer from context ID).
       - `kitchen_notes`: String. Extract any special cooking requests here (e.g., "Cut in squares", "Don't burn it", "Extra napkins"). If none, use empty string "".
 ```
 
-#### 6. MODIFY_ORDER
+#### 4. MODIFY_ORDER
 ```text
-6.  **`MODIFY_ORDER`**
+4.  **`MODIFY_ORDER`**
     - Trigger: User confirms changes to an active order.
-    - Data: `order_id`, `new_items` (Structure same as ADD_TO_CART), `notes`.
+    - Data: `order_id`, `new_items` (Structure same as CONFIRM_ORDER), `notes`.
 ```
 
-### Step B: Update Examples (Section 8 in Agent3)
+### Step B: Update Examples (Section 8)
 
 Find **Section 8. EXTENSIVE EXAMPLES**.
 Replace **Example 7** (Confirmation) or the relevant Ordering example to show the `size` field.
@@ -77,38 +71,31 @@ Double-click **AI Agent4** or **AI Agent5**. Scroll to **System Message**.
 ### Step A: Update Intent Definitions (Section 5)
 
 Find **Section 5. INTENT CLASSIFICATION**.
-Replace definitions for `ADD_TO_CART` and `CONFIRM_ORDER`.
-**Note:** These agents uses `lat` / `lng` / `customer_name` in `CONFIRM_ORDER`, NOT `address_id`.
+Update the `CONFIRM_ORDER` definition to match the new item structure. Remove any `ADD_TO_CART` rules.
+**Note:** These agents use `lat` / `lng` / `customer_name` in `CONFIRM_ORDER`, NOT `address_id`.
 
-#### 3. ADD_TO_CART
+#### 3. CONFIRM_ORDER
 ```text
-3.  **`ADD_TO_CART`**
-    - Trigger: User selects items.
-    - **Logic:** Match items to Menu. Keep cumulative list.
-    - **Output Data:** `items` (Array of objects).
-      - Each item MUST have: `name`, `qty`, `price`.
-      - If applicable: `size` (String, e.g., "Medium", "Roll", "Large").
-      - If applicable: `options` (Array of Strings, e.g., ["Spicy", "No Cut", "Extra Cheese"]).
-```
-
-#### 4. CONFIRM_ORDER
-```text
-4.  **`CONFIRM_ORDER`**
-    - Trigger: "Confirm", "Place order", "تمام".
-    - **Logic:** Only trigger if items exist in cart history.
-    - **Output Data:** `items` (Structure same as ADD_TO_CART: incl. name, qty, price, size, options), `customer_name` (if known), `lat` (if known), `lng` (if known).
+3.  **`CONFIRM_ORDER`**
+    - Trigger: "Confirm", "Place order", "تمام" accompanied by the list of items.
+    - **Output Data:** 
+      - `items` (Array of objects).
+        - Each item MUST have: `name`, `qty`, `price`.
+        - If applicable: `size` (String, e.g., "Medium", "Roll", "Large").
+        - If applicable: `options` (Array of Strings, e.g., ["Spicy", "No Cut", "Extra Cheese"]).
+      - `customer_name` (if known), `lat` (if known), `lng` (if known).
 ```
 
 ### Step B: Update Examples (Section 7)
 
-**CRITICAL:** Replace **Example 6** and add **Example 8** to show the AI exactly how to handle sizes vs sizes-as-options.
+**CRITICAL:** Replace the complex ordering examples to show the AI exactly how to handle sizes vs sizes-as-options.
 
 #### Replace "Ex 6: Ordering (Complex)" with this:
 
 ```json
 {
-  "intent": "ADD_TO_CART",
-  "reply_to_user": "تمام يا فندم! 🥞 ضيفتلك 2 فطيرة سجق (وسط) و 1 نوتيلا. تحب تزود أي مشروبات؟",
+  "intent": "CONFIRM_ORDER",
+  "reply_to_user": "تمام يا فندم! 🥞 ضيفتلك 2 فطيرة سجق (وسط) و 1 نوتيلا. الطلب هيوصل في أقرب وقت!",
   "data": {
     "items": [ 
       { 
@@ -125,7 +112,9 @@ Replace definitions for `ADD_TO_CART` and `CONFIRM_ORDER`.
         "price": 0,
         "options": []
       }
-    ] 
+    ],
+    "lat": 31.0,
+    "lng": 31.0
   }
 }
 ```
@@ -134,8 +123,8 @@ Replace definitions for `ADD_TO_CART` and `CONFIRM_ORDER`.
 
 ```json
 {
-  "intent": "ADD_TO_CART",
-  "reply_to_user": "تمام، واحد مشلتت وسط مع عسل زيادة. أي خدمة تانية؟",
+  "intent": "CONFIRM_ORDER",
+  "reply_to_user": "تمام، واحد مشلتت وسط مع عسل زيادة. جاري تجهيز الطلب.",
   "data": {
     "items": [
       {
@@ -145,22 +134,17 @@ Replace definitions for `ADD_TO_CART` and `CONFIRM_ORDER`.
         "price": 0,
         "options": ["Extra Honey"]
       }
-    ]
+    ],
+    "lat": 31.0,
+    "lng": 31.0
   }
 }
 ```
 
 ## 4. Verification Checklist
 
-After saving, test with these messages:
+After saving the node prompts, test the bot.
 
-1.  **"One medium sausage feteer spicy"**
-    -   Expect JSON: `size: "Medium"`, `options: ["Spicy"]`
-    -   Result: Blue Badge says "Medium", Gray Badge says "+ Spicy".
-
-2.  **"Two rolls chocolate no cut"**
-    -   Expect JSON: `size: "Roll"`, `options: ["No Cut"]`
-    -   Result: Blue Badge says "Roll", Gray Badge says "+ No Cut".
-
-3.  **"Change order #123 to make it Large"**
-    -   Expect JSON (MODIFY_ORDER): `new_items` contains `size: "Large"`.
+1.  **"One medium sausage feteer spicy" -> "Yes confirm"**
+    -   Expect JSON: `size: "Medium"`, `options: ["Spicy"]` inside `CONFIRM_ORDER`.
+    -   Result: Kitchen Window Blue Badge says "Medium", Gray Badge says "+ Spicy".
