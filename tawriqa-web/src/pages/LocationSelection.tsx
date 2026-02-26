@@ -29,7 +29,7 @@ export default function LocationSelection() {
     const bgImage = settings?.hero_cover || '/assets/images/location-bg.avif';
 
     // Handle when user confirms a location (from Map or Dropdown)
-    const handleConfirmLocation = async (lat: number, lng: number, address: string, predefinedBranchId?: number, predefinedFee?: number, predefinedOpeningTime?: string, predefinedClosingTime?: string) => {
+    const handleConfirmLocation = async (lat: number, lng: number, address: string, predefinedBranchId?: number, predefinedFee?: number, predefinedOpeningTime?: string, predefinedClosingTime?: string, predefinedBranchName?: string) => {
         setIsChecking(true);
         setErrorMsg(null);
 
@@ -38,7 +38,7 @@ export default function LocationSelection() {
 
             // If we selected from Dropdown, we already know the branch/fee
             if (predefinedBranchId && predefinedFee !== undefined) {
-                result = { covered: true, branch_id: predefinedBranchId, delivery_fee: predefinedFee, branch_name: undefined, zone_name: undefined, opening_time: predefinedOpeningTime, closing_time: predefinedClosingTime };
+                result = { covered: true, branch_id: predefinedBranchId, delivery_fee: predefinedFee, branch_name: predefinedBranchName, zone_name: address, opening_time: predefinedOpeningTime, closing_time: predefinedClosingTime };
             } else {
                 // If from Map, ask Backend to check polygon coverage
                 result = await api.checkCoverage(lat, lng);
@@ -179,7 +179,7 @@ export default function LocationSelection() {
                             ) : (
                                 // Dropdown Component
                                 <ZoneDropdown onSelect={(zone) => {
-                                    handleConfirmLocation(0, 0, zone.name, zone.branch_id, zone.delivery_fee, zone.opening_time, zone.closing_time);
+                                    handleConfirmLocation(0, 0, zone.name, zone.branch_id, zone.delivery_fee, zone.opening_time, zone.closing_time, zone.branch_name);
                                 }} />
                             )}
                         </div>

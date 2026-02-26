@@ -178,10 +178,10 @@ export default function ProductModal({ item, onClose, initialSelections, initial
             <div className="bg-white w-full max-w-lg md:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-10 duration-300">
 
                 {/* Header Image */}
-                <div className="relative h-48 md:h-56 bg-gray-100 shrink-0">
+                <div className="relative bg-white shrink-0 overflow-hidden">
                     <img
                         src={item.image_url || 'https://via.placeholder.com/400'}
-                        className="w-full h-full object-cover"
+                        className="w-full max-h-72 object-contain"
                         alt={item.name_en}
                     />
                     <button

@@ -94,6 +94,7 @@ function App() {
                     {/* Menu - Allow access even without branch for testing */}
                     <Route path="/location" element={<LocationSelection />} />
                     <Route path="/menu" element={<Menu />} />
+                    <Route path="/menu-ar" element={<Menu />} />
 
                     {/* New Pages */}
                     <Route path="/branches" element={<Branches />} />

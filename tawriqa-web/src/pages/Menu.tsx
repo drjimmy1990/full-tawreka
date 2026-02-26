@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import useTranslation from '../hooks/useTranslation';
 import CategoryBar from '../components/menu/CategoryBar';
@@ -13,18 +13,20 @@ import type { MenuItem } from '../types';
 
 export default function Menu() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { t, lang } = useTranslation();
     const { settings } = useSettingsStore();
-    const { serviceType, branch, isBranchOpen } = useLocationStore();
+    const { serviceType, branch, isBranchOpen, deliveryZone, deliveryAddress } = useLocationStore();
     const branchOpen = isBranchOpen();
     const { getItemCount, getTotal } = useCartStore();
 
     // Guard: Redirect to location if no branch selected
     useEffect(() => {
         if (!branch) {
-            navigate('/location?redirect=menu');
+            const redirectPath = location.pathname.substring(1) || 'menu';
+            navigate(`/location?redirect=${redirectPath}`);
         }
-    }, [branch, navigate]);
+    }, [branch, navigate, location.pathname]);
 
     // State
     const [categories, setCategories] = useState<any[]>([]);
@@ -153,10 +155,13 @@ export default function Menu() {
                             />
                         </div>
                         <div className="flex-1">
-                            <h1 className="font-bold text-lg text-gray-900">{settings?.brand_name_ar || 'توريقة'}</h1>
-                            <p className="text-xs text-gray-500">
-                                {branch && <span className="text-primary font-bold">{lang === 'ar' ? (branch as any).name_ar : lang === 'en' ? (branch as any).name_en : (branch as any).name_ru || branch.name} • </span>}
-                                {serviceType === 'delivery' ? t('landing.delivery') : t('landing.pickup')} • 35-45 {t('common.minutes')}
+                            <h1 className="font-bold text-lg text-gray-900">{settings?.brand_name_ar || 'توريقة .. بين الطبقات حكايات'}</h1>
+                            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                {branch && <span className="text-primary font-bold">{branch.name}</span>}
+                                {branch && <span>•</span>}
+                                <span>{serviceType === 'delivery' ? (deliveryZone || deliveryAddress || (lang === 'ar' ? 'توصيل' : 'Delivery')) : (lang === 'ar' ? 'استلام من الفرع' : 'Pickup')}</span>
+                                <span>•</span>
+                                <span>{lang === 'ar' ? '35-45 دقيقة' : '35-45 mins'}</span>
                             </p>
                         </div>
                         <div className="text-center bg-green-50 px-3 py-1 rounded-lg">
