@@ -1064,3 +1064,19 @@ WITH
 NOTIFY pgrst, 'reload schema';
 
 ALTER TYPE user_role ADD VALUE 'operations_manager';
+
+INSERT INTO
+    public.site_settings (key, value, type, description)
+VALUES (
+        'enable_map_gps',
+        'false',
+        'boolean',
+        'Toggle Map and GPS features on Location Selection page (true/false)'
+    )
+ON CONFLICT (key) DO
+UPDATE
+SET
+    value = EXCLUDED.value,
+    type = EXCLUDED.type,
+    description = EXCLUDED.description,
+    updated_at = timezone ('utc'::text, now());
