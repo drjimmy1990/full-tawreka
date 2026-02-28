@@ -23,12 +23,12 @@ export default function Footer() {
         { label: t('landing.contact_us') || 'اتصل بنا', action: () => navigate('/#contact') },
     ];
 
-    // Legal links
+    // Legal links (internal routes)
     const legalLinks = [
-        { label: t('footer.terms') || 'الشروط والأحكام', url: settings?.terms_url },
-        { label: t('footer.privacy') || 'سياسة الخصوصية', url: settings?.privacy_url },
-        { label: t('footer.about') || 'عن توريقة', url: settings?.about_url },
-    ].filter(link => link.url);
+        { label: t('footer.refund') || 'سياسة الاسترجاع', path: '/refund-policy' },
+        { label: t('footer.privacy') || 'سياسة الخصوصية', path: '/privacy-policy' },
+        { label: t('footer.about') || 'عن توريقة', path: '/about' },
+    ];
 
     return (
         <footer className="bg-[#111] text-white pt-12 pb-8">
@@ -66,14 +66,12 @@ export default function Footer() {
                             ))}
                             {legalLinks.map((link, i) => (
                                 <li key={`legal-${i}`}>
-                                    <a
-                                        href={link.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <button
+                                        onClick={() => navigate(link.path)}
                                         className="text-gray-400 hover:text-white transition-colors text-sm"
                                     >
                                         {link.label}
-                                    </a>
+                                    </button>
                                 </li>
                             ))}
                         </ul>

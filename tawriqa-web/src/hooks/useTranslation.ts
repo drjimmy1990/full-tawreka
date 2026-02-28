@@ -147,6 +147,7 @@ const translations: Record<string, Record<string, string>> = {
         'footer.contact': 'تواصل معنا',
         'footer.follow_us': 'تابعنا',
         'footer.terms': 'الشروط والأحكام',
+        'footer.refund': 'سياسة الاسترجاع',
         'footer.privacy': 'سياسة الخصوصية',
         'footer.about': 'عن توريقة',
 
@@ -307,6 +308,7 @@ const translations: Record<string, Record<string, string>> = {
         'footer.contact': 'Contact Us',
         'footer.follow_us': 'Follow Us',
         'footer.terms': 'Terms & Conditions',
+        'footer.refund': 'Refund Policy',
         'footer.privacy': 'Privacy Policy',
         'footer.about': 'About Us',
     },

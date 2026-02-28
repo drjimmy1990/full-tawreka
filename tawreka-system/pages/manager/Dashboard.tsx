@@ -570,7 +570,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
 
               {/* Header */}
               <div className={`px-4 py-3 flex justify-between items-center ${getStatusColor(order.status)}`}>
-                <span className="font-bold text-lg">#{order.daily_seq}</span>
+                <span className="font-bold text-lg">#{order.id}</span>
+                {order.daily_seq && <span className="text-xs opacity-60 font-mono ml-1">#{order.daily_seq}</span>}
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-gray-600 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
@@ -764,8 +765,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
             <div className={`p-6 flex justify-between items-start ${getStatusColor(selectedOrder.status)}`}>
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h2 className="text-2xl font-bold">#{selectedOrder.daily_seq || selectedOrder.id}</h2>
-                  <span className="text-xs opacity-50 font-mono">ID: {selectedOrder.id}</span>
+                  <h2 className="text-2xl font-bold">#{selectedOrder.id}</h2>
                   <span className="bg-white/30 px-3 py-1 rounded-full text-sm font-bold backdrop-blur-sm">
                     {t(`status.${selectedOrder.status}`)}
                   </span>
@@ -773,6 +773,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onConnectionStatusChange })
                 <p className="opacity-80 text-sm">
                   {new Date(selectedOrder.created_at).toLocaleString()}
                 </p>
+                {selectedOrder.daily_seq && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs opacity-60">{language === 'ar' ? 'التسلسل اليومي' : 'Daily Sequence'}</span>
+                    <span className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">#{selectedOrder.daily_seq}</span>
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 {!isEditing && selectedOrder.status !== 'done' && selectedOrder.status !== 'cancelled' && (

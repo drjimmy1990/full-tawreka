@@ -17,6 +17,9 @@ import Branches from './pages/Branches';
 import About from './pages/About';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
+import LandingAr from './pages/LandingAr';
+import RefundPolicy from './pages/RefundPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function App() {
     const { setSettings, getLocalizedSetting, getSetting } = useSettingsStore();
@@ -95,6 +98,11 @@ function App() {
                     <Route path="/location" element={<LocationSelection />} />
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/menu-ar" element={<Menu />} />
+
+                    {/* Public Pages */}
+                    <Route path="/landing-ar" element={<LandingAr />} />
+                    <Route path="/refund-policy" element={<RefundPolicy />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
                     {/* New Pages */}
                     <Route path="/branches" element={<Branches />} />
