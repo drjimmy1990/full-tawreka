@@ -124,7 +124,7 @@ export default function Checkout() {
             const result = await api.createOrder(orderPayload);
 
             if (result && result.order_id) {
-                setOrderId(result.daily_seq || result.order_id);
+                setOrderId(result.order_id);
 
                 if (paymentMethod === 'card') {
                     try {
