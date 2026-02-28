@@ -109,6 +109,7 @@ export default function Checkout() {
                     : formData.address || 'Pickup',
                 delivery_lat: deliveryLat || undefined,
                 delivery_lng: deliveryLng || undefined,
+                delivery_fee: serviceType === 'delivery' ? (deliveryFee || 0) : 0,
                 payment_method: paymentMethod,
                 items: items.map(item => ({
                     item_id: item.menuItemId,

@@ -139,6 +139,10 @@ export const createCustomerOrder = async (req: Request, res: Response) => {
                 }
             }
         }
+        // Fallback: use the fee from the frontend if zone lookup didn't find one
+        if (deliveryFee === 0 && service_type === 'delivery' && req.body.delivery_fee) {
+            deliveryFee = Number(req.body.delivery_fee) || 0;
+        }
 
         // 4. Transform items from website format to kitchen format
         // Website sends: { item_id, quantity, unit_price, options, notes }
